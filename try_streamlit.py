@@ -1,7 +1,6 @@
 import streamlit as st
 import pandas as pd
 import os
-from google.cloud import storage
 
 
 st.markdown("# Self Exploratory Visualization on the World of Paintings")
