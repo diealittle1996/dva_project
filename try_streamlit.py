@@ -20,7 +20,7 @@ def run_query(query):
 rows = run_query("SELECT objectID FROM `cse6242-343901.metobjects.table1` LIMIT 10")
 
 for row in rows:
-    st.write("✍️ " + row['objectID'])
+    st.write("✍️ " + str(row['objectID']))
 
 st.markdown("# Self Exploratory Visualization on the World of Paintings")
 st.markdown("Explore the dataset to know more about artistic heritage")
