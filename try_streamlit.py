@@ -1,7 +1,26 @@
 import streamlit as st
 import pandas as pd
 import os
+from google.cloud import storage
+from google.cloud import bigquery
 
+
+credentials = service_account.Credentials.from_service_account_info(
+    st.secrets["gcp_service_account"]
+)
+client = bigquery.Client(credentials=credentials)
+
+@st.experimental_memo(ttl=600)
+def run_query(query):
+    query_job = client.query(query)
+    rows_raw = query_job.result()
+    rows = [dict(row) for row in rows_raw]
+    return rows
+
+rows = run_query("SELECT * FROM 'cse6242-343901.metobjects.table1' LIMIT 10")
+
+for row in rows:
+    st.write("✍️ " + row['objectID'])
 
 st.markdown("# Self Exploratory Visualization on the World of Paintings")
 st.markdown("Explore the dataset to know more about artistic heritage")
