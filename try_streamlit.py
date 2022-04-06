@@ -11,17 +11,17 @@ credentials = service_account.Credentials.from_service_account_info(
 )
 client = bigquery.Client(credentials=credentials)
 
-@st.experimental_memo(ttl=600)
-def run_query(query):
-    query_job = client.query(query)
-    rows_raw = query_job.result()
-    rows = [dict(row) for row in rows_raw]
-    return rows
+# @st.experimental_memo(ttl=600)
+# def run_query(query):
+#     query_job = client.query(query)
+#     rows_raw = query_job.result()
+#     rows = [dict(row) for row in rows_raw]
+#     return rows
 
-rows = run_query("SELECT objectID FROM `cse6242-343901.metobjects.table1` LIMIT 10")
+# rows = run_query("SELECT objectID FROM `cse6242-343901.metobjects.table1` LIMIT 10")
 
-for row in rows:
-    st.write("✍️ " + str(row['objectID']))
+# for row in rows:
+#     st.write("✍️ " + str(row['objectID']))
 
 st.markdown("# Self Exploratory Visualization on the World of Paintings")
 st.markdown("Explore the dataset to know more about artistic heritage")
@@ -35,37 +35,37 @@ Now, we invite you to delve into the world of art, find similar artworks, and fo
 st.sidebar.markdown("## Side Panel")
 st.sidebar.markdown("Use this panel to explore the dataset and create own viz.")
 
-df = pd.read_csv('cleaned_data_2.csv')
-st.write(len(df))
 
-# @st.cache(persist=True, show_spinner=True)
+@st.cache(persist=True, show_spinner=True)
 
-# def load_data(nrows):
-#     df = pd.read_csv("MetObjects_subset.csv", nrows = nrows)
-#     return df
+def load_data(nrows):
+    query = f"SELECT * FROM `cse6242-343901.metobjects.table1` LIMIT {nrows}"
+    df = client.query(query).to_dataframe()
+    return df
 
-
-
-# data_load_state = st.text('Loading dataset...')
-# df = load_data(100000)
-# data_load_state.text('Loading dataset...Completed!')
+data_load_state = st.text('Loading dataset...')
+df = load_data(1000)
+data_load_state.text('Loading dataset...Completed!')
 
 
-# st.title('Quick  Explore')
-# st.sidebar.subheader(' Quick  Explore')
-# st.markdown("Tick the box on the side panel to explore the dataset.")
-# if st.sidebar.checkbox('Dataset Quick Look'):
-#     st.subheader('Dataset Quick Look:')
-#     st.write(df.head())
-# if st.sidebar.checkbox("Show Columns"):
-#     st.subheader('Show Columns List')
-#     st.write(df.columns.to_list())
-# if st.sidebar.checkbox('Statistical Description'):
-#     st.subheader('Statistical Data Descripition')
-#     st.write(df.describe())
-# if st.sidebar.checkbox('Missing Values?'):
-#     st.subheader('Missing values')
-#     st.write(df.isnull().sum())
+st.title('Quick  Explore')
+st.sidebar.subheader(' Quick  Explore')
+st.markdown("Tick the box on the side panel to explore the dataset.")
+if st.sidebar.checkbox('Dataset Quick Look'):
+    st.subheader('Dataset Quick Look:')
+    st.write(df.head())
+if st.sidebar.checkbox("Show Columns"):
+    st.subheader('Show Columns List')
+    st.write(df.columns.to_list())
+if st.sidebar.checkbox('Statistical Description'):
+    st.subheader('Statistical Data Descripition')
+    st.write(df.describe())
+if st.sidebar.checkbox('Missing Values?'):
+    st.subheader('Missing values')
+    st.write(df.isnull().sum())
     
 ef_vgg = np.load("VGG_features.npy", encoding='bytes')
 st.write(ef_vgg.shape)
+
+st.image(df.loc[0,'primaryImage'])
+
