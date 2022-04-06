@@ -64,7 +64,7 @@ if st.sidebar.checkbox('Statistical Description'):
     st.subheader('Statistical Data Descripition')
     df_types = pd.DataFrame(df.dtypes, columns=['Data Type'])
     st.write(df_types.astype(str))
-#     st.write(df.describe())
+    st.write(df.describe())
 if st.sidebar.checkbox('Missing Values?'):
     st.subheader('Missing values')
     st.write(df.isnull().sum())
