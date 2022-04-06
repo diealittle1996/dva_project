@@ -12,10 +12,12 @@ import io
 from keras.preprocessing.image import ImageDataGenerator
 from keras.applications.vgg16 import VGG16
 
-# os.environ["GOOGLE_APPLICATION_CREDENTIALS"]="/Users/tianhuazhu/Downloads/key3.json"
+credentials = service_account.Credentials.from_service_account_info(
+    st.secrets["gcp_service_account"]
+)
 
 def download_blob_into_memory(bucket_name, blob_name):
-    storage_client = storage.Client()
+    storage_client = storage.Client(credentials=credentials)
     bucket = storage_client.bucket(bucket_name)
     blob = bucket.blob(blob_name)
     contents = blob.download_as_string()
