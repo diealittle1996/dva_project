@@ -24,13 +24,23 @@ def download_blob_into_memory(bucket_name, blob_name):
     contents = blob.download_as_string()
     return contents
 
-def get_image(id_num, show=0):
-    im = download_blob_into_memory('dva_paintings', f'{id_num}.jpg')
+def display_test_image(test_image):
+    st.image(Image.open("dva_paintings/"+test_image))
+
+def get_image(test_image, show=0):
+    try:
+        int(test_image.replace('TP_',''))
+        im = download_blob_into_memory('dva_paintings', f'{test_image}.jpg')
+    except:
+        try:
+            im = download_blob_into_memory('dva_paintings', f'{test_image}')
+        except:
+            im = Image.open("dva_paintings/"+test_image)
+            myImage = np.array(im)
+            return np.resize(myImage,(100,100))
     fp = io.BytesIO(im)
     myImage = mpimg.imread(fp, format='jpeg')
     if show:
-        # plt.imshow(myImage)
-        # plt.show()
         st.image(myImage)
     else:
         return np.resize(myImage,(100,100))
@@ -39,7 +49,7 @@ def getCosineSimilarity(A, B):
     cos_similarity = np.dot(A,B.T) / (np.linalg.norm(A)*np.linalg.norm(B))
     return cos_similarity[0][0]
 
-def get_similar_art(extracted_features, new_art_ef, id_num, df, count=5,distance = "euclidean"):
+def get_similar_art(extracted_features, new_art_ef, test, feature_df, df, count=5,distance = "euclidean"):
     if distance == "euclidean":
         dist = pairwise_distances(extracted_features, new_art_ef).T[0]
         indices = np.argsort(dist)[0:count]
@@ -64,17 +74,26 @@ def get_similar_art(extracted_features, new_art_ef, id_num, df, count=5,distance
     ordered_indices = indices[min_elements_order]
 
     st.write("="*20 + "input product image" + "="*20)
-    get_image(id_num, 1)
-    mylist = []
+    display_test_image(test)
 
+    mylist = []
     st.write("\n","="*20 + "Similar Images" + "="*20)
     i=-1
     for index in ordered_indices:
         i+=1
-        objectID = index_to_id(index, df)
+        objectID = index_to_id(index, feature_df)
         mylist.append(objectID)
         get_image(objectID, 1)
         st.write('Distance from input image:' + str(pdists[i]))
+        try:
+            out = {}
+            values = df.loc[df.objectID==objectID].values[0]
+            for x, y in zip(df.columns, values):
+                if (y != "None")&(y != "<NA>"):
+                    out[x] = y
+            st.write(out)
+        except:
+            st.write(objectID)
     return mylist, ordered_indices
 
 def extract_features_VGG(dataframe, img_width=224, img_height=224, batch_size=64, save=False):
@@ -100,8 +119,11 @@ def extract_features_VGG(dataframe, img_width=224, img_height=224, batch_size=64
         np.save(open('VGG_features.npy', 'wb'), extracted_features)
     return extracted_features
 
-def new_image_as_df(new_image, df):
-    new_image = 'dva_paintings/' + str(new_image) + '.jpg'
+def new_image_as_df(test_image):
+    if isinstance(test_image, str):
+        new_image = 'dva_paintings/' + test_image
+    if isinstance(test_image, int):
+        new_image = 'dva_paintings/' + str(test_image) + '.jpg'
     new_df = pd.DataFrame()
     new_df['filename'] = [new_image]
     return new_df
