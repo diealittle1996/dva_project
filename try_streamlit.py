@@ -4,6 +4,9 @@ import numpy as np
 from google.oauth2 import service_account
 from google.cloud import storage
 from google.cloud import bigquery
+import os
+import db_dtypes
+from PIL import Image
 
 
 credentials = service_account.Credentials.from_service_account_info(
