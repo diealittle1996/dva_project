@@ -36,34 +36,34 @@ st.sidebar.markdown("## Side Panel")
 st.sidebar.markdown("Use this panel to explore the dataset and create own viz.")
 
 
-@st.cache(persist=True, show_spinner=True)
+# @st.cache(persist=True, show_spinner=True)
 
-def load_data(nrows):
-    df = pd.read_csv("MetObjects_subset.csv", nrows = nrows)
-    return df
-
-
-
-data_load_state = st.text('Loading dataset...')
-df = load_data(100000)
-data_load_state.text('Loading dataset...Completed!')
+# def load_data(nrows):
+#     df = pd.read_csv("MetObjects_subset.csv", nrows = nrows)
+#     return df
 
 
-st.title('Quick  Explore')
-st.sidebar.subheader(' Quick  Explore')
-st.markdown("Tick the box on the side panel to explore the dataset.")
-if st.sidebar.checkbox('Dataset Quick Look'):
-    st.subheader('Dataset Quick Look:')
-    st.write(df.head())
-if st.sidebar.checkbox("Show Columns"):
-    st.subheader('Show Columns List')
-    st.write(df.columns.to_list())
-if st.sidebar.checkbox('Statistical Description'):
-    st.subheader('Statistical Data Descripition')
-    st.write(df.describe())
-if st.sidebar.checkbox('Missing Values?'):
-    st.subheader('Missing values')
-    st.write(df.isnull().sum())
+
+# data_load_state = st.text('Loading dataset...')
+# df = load_data(100000)
+# data_load_state.text('Loading dataset...Completed!')
+
+
+# st.title('Quick  Explore')
+# st.sidebar.subheader(' Quick  Explore')
+# st.markdown("Tick the box on the side panel to explore the dataset.")
+# if st.sidebar.checkbox('Dataset Quick Look'):
+#     st.subheader('Dataset Quick Look:')
+#     st.write(df.head())
+# if st.sidebar.checkbox("Show Columns"):
+#     st.subheader('Show Columns List')
+#     st.write(df.columns.to_list())
+# if st.sidebar.checkbox('Statistical Description'):
+#     st.subheader('Statistical Data Descripition')
+#     st.write(df.describe())
+# if st.sidebar.checkbox('Missing Values?'):
+#     st.subheader('Missing values')
+#     st.write(df.isnull().sum())
     
 ef_vgg = np.load('VGG_features.npy')
 print(ef_vgg.shape)
