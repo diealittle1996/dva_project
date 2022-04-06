@@ -72,7 +72,6 @@ if image_file is not None:
     st.write(file_details)
     with open(os.path.join("dva_paintings",image_file.name),"wb") as f:
         f.write((image_file).getbuffer())
-        st.write(os.path.join("dva_paintings",image_file.name))
         st.success("New Image Received")
     button = st.button('Generate recommendations')
     if button:
