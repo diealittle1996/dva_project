@@ -34,11 +34,13 @@ st.sidebar.markdown("Use this panel to explore the dataset and create own viz.")
 
 def load_data(nrows):
     query = f"SELECT * FROM `cse6242-343901.metobjects.table1` LIMIT {nrows}"
+    query2 = "SELECT * FROM `cse6242-343901.metobjects.table1`"
     df = client.query(query).to_dataframe()
-    return df
+    full_df = client.query(query2).to_dataframe()
+    return df, full_df
 
 data_load_state = st.text('Loading dataset...')
-df = load_data(1000)
+df, full_df = load_data(1000)
 data_load_state.text('Loading dataset...Completed!')
 
 
