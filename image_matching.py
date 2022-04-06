@@ -53,8 +53,8 @@ def eliminate_dup(test, indices, feature_df):
     ids = [str(index_to_id(idx, feature_df)) for idx in indices]
     myID = '.'.join(test.split(".")[:-1])
     if myID in ids:
-        indices.remove([ids.index(myID)])
-        indices.append(np.argsort(dist)[count])
+        indices = np.delete(indices, ids.index(myID))
+        indices = np.append(indices, np.argsort(dist)[count])
     return new_indices
 
 def get_similar_art(extracted_features, new_art_ef, test, feature_df, df, count=5,distance = "euclidean"):
