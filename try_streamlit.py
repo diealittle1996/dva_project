@@ -38,7 +38,7 @@ Now, we invite you to delve into the world of art, find similar artworks, and fo
 st.sidebar.markdown("## Side Panel")
 st.sidebar.markdown("Use this panel to explore the dataset and create own viz.")
 
-df = pd.read.csv('cleaned_data_2.csv')
+df = pd.read_csv('cleaned_data_2.csv')
 st.write(len(df))
 
 # @st.cache(persist=True, show_spinner=True)
