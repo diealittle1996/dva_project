@@ -49,33 +49,35 @@ def getCosineSimilarity(A, B):
     cos_similarity = np.dot(A,B.T) / (np.linalg.norm(A)*np.linalg.norm(B))
     return cos_similarity[0][0]
 
-def eliminate_dup(test, indices, feature_df, dist):
+def eliminate_dup(test, indices, feature_df):
     ids = [str(index_to_id(idx, feature_df)) for idx in indices]
     myID = '.'.join(test.split(".")[:-1])
     if myID in ids:
         indices = np.delete(indices, ids.index(myID))
-        indices = np.append(indices, np.argsort(dist)[count])
     return new_indices
 
 def get_similar_art(extracted_features, new_art_ef, test, feature_df, df, count=5,distance = "euclidean"):
     if distance == "euclidean":
         dist = pairwise_distances(extracted_features, new_art_ef).T[0]
         indices = np.argsort(dist)[0:count]
-        indices = eliminate_dup(test, indices, feature_df, dist)
+        indices = eliminate_dup(test, indices, feature_df)
+        indices = np.append(indices, np.argsort(dist)[count])
         pdists  = np.sort(dist)[0:count]
     elif distance == "cosine":
         dist = []
         for feature in extracted_features:
             dist.append(getCosineSimilarity(feature.reshape(1,extracted_features.shape[1]), new_art_ef))
         indices = np.argsort(dist)[0:count]
-        indices = eliminate_dup(test, indices, feature_df, dist)
+        indices = eliminate_dup(test, indices, feature_df)
+        indices = np.append(indices, np.argsort(dist)[count])
         pdists  = np.sort(dist)[0:count]
     elif distance == "rmse":
         dist = []
         for feature in extracted_features:
             dist.append(rmse(feature.reshape(1,extracted_features.shape[1]), new_art_ef))
         indices = np.argsort(dist)[0:count]
-        indices = eliminate_dup(test, indices, feature_df, dist)
+        indices = eliminate_dup(test, indices, feature_df)
+        indices = np.append(indices, np.argsort(dist)[count])
         pdists  = np.sort(dist)[0:count]
 
     min_elements =  np.array(dist)[indices]
