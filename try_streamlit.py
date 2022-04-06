@@ -60,32 +60,39 @@ if st.sidebar.checkbox('Statistical Description'):
 if st.sidebar.checkbox('Missing Values?'):
     st.subheader('Missing values')
     st.write(df.isnull().sum())
-    
-ef_vgg = np.load("VGG_features.npy", encoding='bytes')
-st.write(ef_vgg.shape)
+ 
+st.subheader("Provide Your Image to Find Visually Similar Ones:")
+image_file = st.file_uploader("Upload Images", type=["png","jpg","jpeg"])
 
-df = pd.read_csv("cleaned_data_2.csv")
-ef_vgg = np.load('VGG_features.npy')
+if image_file is not None:
+    file_details = {"filename":image_file.name, "filetype":image_file.type,
+                  "filesize":image_file.size}
+    st.write(file_details)
+    with open(os.path.join("dva_paintings",image_file.name),"wb") as f:
+        f.write((image_file).getbuffer())
+        st.success("New Image Received")
+    button = st.button('Generate recommendations')
+    if button:
+        dta = pd.read_csv("cleaned_data_2.csv")
+        ef_vgg = np.load('VGG_features.npy')
 
-TEST_IMAGE_ID = 37961
-test_df_1 = new_image_as_df(TEST_IMAGE_ID, df)
-ef_test_vgg = extract_features_VGG(test_df_1)
+        TEST_IMAGE = image_file.name
+        test_df_1 = new_image_as_df(TEST_IMAGE)
+        ef_test_vgg = extract_features_VGG(test_df_1)
 
-mylist, ordered_indices = get_similar_art(ef_vgg, ef_test_vgg, id_num=37961, df=df, distance="rmse")
+        mylist, ordered_indices = get_similar_art(ef_vgg, ef_test_vgg, test=TEST_IMAGE, feature_df=dta, df=full_df.astype(str), distance="rmse")
 
-new_art = get_image(TEST_IMAGE_ID)
-similarity_vgg_euclidean = {"id":[],'mse': [], 'rmse': [],"scc":[],"uqi":[],"msssim":[],"vifp":[]}
-for i in range(5):
-    similar_art = get_image(mylist[i])
-    similarity_vgg_euclidean["id"].append(mylist[i])
-    similarity_vgg_euclidean["mse"].append(mse(new_art,similar_art))
-    similarity_vgg_euclidean["rmse"].append(rmse(new_art,similar_art))
-    similarity_vgg_euclidean["scc"].append(scc(new_art,similar_art))
-    similarity_vgg_euclidean["uqi"].append(uqi(new_art,similar_art))
-    similarity_vgg_euclidean["msssim"].append(msssim(new_art,similar_art).astype('float32'))
-    similarity_vgg_euclidean["vifp"].append(vifp(new_art,similar_art))
-similarity_vgg_euclidean_df = pd.DataFrame(similarity_vgg_euclidean)
-st.write("avg mse: ", np.mean(similarity_vgg_euclidean_df["mse"]))
-st.write(similarity_vgg_euclidean_df)
-
-
+        new_art = get_image(TEST_IMAGE)
+        similarity_vgg_euclidean = {"id":[],'mse': [], 'rmse': [],"scc":[],"uqi":[],"msssim":[],"vifp":[]}
+        for i in range(5):
+            similar_art = get_image(mylist[i])
+            similarity_vgg_euclidean["id"].append(mylist[i])
+            similarity_vgg_euclidean["mse"].append(mse(new_art,similar_art))
+            similarity_vgg_euclidean["rmse"].append(rmse(new_art,similar_art))
+            similarity_vgg_euclidean["scc"].append(scc(new_art,similar_art))
+            similarity_vgg_euclidean["uqi"].append(uqi(new_art,similar_art))
+            similarity_vgg_euclidean["msssim"].append(msssim(new_art,similar_art).astype('float32'))
+            similarity_vgg_euclidean["vifp"].append(vifp(new_art,similar_art))
+        similarity_vgg_euclidean_df = pd.DataFrame(similarity_vgg_euclidean)
+        st.write("avg mse: ", np.mean(similarity_vgg_euclidean_df["mse"]))
+        st.write(similarity_vgg_euclidean_df)
