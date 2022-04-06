@@ -1,5 +1,6 @@
 import streamlit as st
 import pandas as pd
+import numpy as np
 from google.oauth2 import service_account
 from google.cloud import storage
 from google.cloud import bigquery
@@ -63,3 +64,6 @@ if st.sidebar.checkbox('Statistical Description'):
 if st.sidebar.checkbox('Missing Values?'):
     st.subheader('Missing values')
     st.write(df.isnull().sum())
+    
+ef_vgg = np.load('VGG_features.npy')
+print(ef_vgg.shape)
