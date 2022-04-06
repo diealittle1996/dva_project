@@ -1,12 +1,14 @@
 import streamlit as st
 import pandas as pd
 import numpy as np
-from google.oauth2 import service_account
 from google.cloud import storage
 from google.cloud import bigquery
+from google.oauth2 import service_account
 import os
 import db_dtypes
 from PIL import Image
+from image_matching import get_similar_art, get_image, new_image_as_df, extract_features_VGG
+from sewar.full_ref import mse, rmse, uqi, scc, msssim, vifp
 
 
 credentials = service_account.Credentials.from_service_account_info(
@@ -14,17 +16,6 @@ credentials = service_account.Credentials.from_service_account_info(
 )
 client = bigquery.Client(credentials=credentials)
 
-# @st.experimental_memo(ttl=600)
-# def run_query(query):
-#     query_job = client.query(query)
-#     rows_raw = query_job.result()
-#     rows = [dict(row) for row in rows_raw]
-#     return rows
-
-# rows = run_query("SELECT objectID FROM `cse6242-343901.metobjects.table1` LIMIT 10")
-
-# for row in rows:
-#     st.write("✍️ " + str(row['objectID']))
 
 st.markdown("# Self Exploratory Visualization on the World of Paintings")
 st.markdown("Explore the dataset to know more about artistic heritage")
@@ -73,5 +64,28 @@ if st.sidebar.checkbox('Missing Values?'):
 ef_vgg = np.load("VGG_features.npy", encoding='bytes')
 st.write(ef_vgg.shape)
 
-st.image(df.loc[0,'primaryImage'])
+df = pd.read_csv("cleaned_data_2.csv")
+ef_vgg = np.load('VGG_features.npy')
+
+TEST_IMAGE_ID = 37961
+test_df_1 = new_image_as_df(TEST_IMAGE_ID, df)
+ef_test_vgg = extract_features_VGG(test_df_1)
+
+mylist, ordered_indices = get_similar_art(ef_vgg, ef_test_vgg, id_num=37961, df=df, distance="rmse")
+
+new_art = get_image(TEST_IMAGE_ID)
+similarity_vgg_euclidean = {"id":[],'mse': [], 'rmse': [],"scc":[],"uqi":[],"msssim":[],"vifp":[]}
+for i in range(5):
+    similar_art = get_image(mylist[i])
+    similarity_vgg_euclidean["id"].append(mylist[i])
+    similarity_vgg_euclidean["mse"].append(mse(new_art,similar_art))
+    similarity_vgg_euclidean["rmse"].append(rmse(new_art,similar_art))
+    similarity_vgg_euclidean["scc"].append(scc(new_art,similar_art))
+    similarity_vgg_euclidean["uqi"].append(uqi(new_art,similar_art))
+    similarity_vgg_euclidean["msssim"].append(msssim(new_art,similar_art).astype('float32'))
+    similarity_vgg_euclidean["vifp"].append(vifp(new_art,similar_art))
+similarity_vgg_euclidean_df = pd.DataFrame(similarity_vgg_euclidean)
+st.write("avg mse: ", np.mean(similarity_vgg_euclidean_df["mse"]))
+st.write(similarity_vgg_euclidean_df)
+
 
