@@ -2,6 +2,7 @@ import streamlit as st
 import numpy as np
 import pandas as pd
 from google.cloud import storage
+from google.oauth2 import service_account
 from sklearn.metrics import pairwise_distances
 from sewar.full_ref import rmse
 from PIL import Image
