@@ -8,5 +8,6 @@ db-dtypes==1.0.0
 Pillow==7.0.0
 sewar==0.4.5
 matplotlib==3.3.2
+TensorFlow==2.4.0
 keras==2.4.3
 sklearn
