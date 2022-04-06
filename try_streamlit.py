@@ -5,9 +5,6 @@ from google.oauth2 import service_account
 from google.cloud import storage
 from google.cloud import bigquery
 
-DATA_URL = (
-"VGG_features.npy"
-)
 
 credentials = service_account.Credentials.from_service_account_info(
     st.secrets["gcp_service_account"]
@@ -70,5 +67,5 @@ st.write(len(df))
 #     st.subheader('Missing values')
 #     st.write(df.isnull().sum())
     
-ef_vgg = np.load(DATA_URL)
+ef_vgg = np.load("VGG_features.npy", encoding='bytes')
 st.write(ef_vgg.shape)
