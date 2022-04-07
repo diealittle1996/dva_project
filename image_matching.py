@@ -63,7 +63,8 @@ def get_similar_art(extracted_features, new_art_ef, test, feature_df, df, count=
         dist = pairwise_distances(extracted_features, new_art_ef).T[0]
         indices = np.argsort(dist)[0:count]
         indices = eliminate_dup(test, indices, feature_df)
-        indices = np.append(indices, np.argsort(dist)[count])
+        if len(indices) < 5:
+            indices = np.append(indices, np.argsort(dist)[count])
         pdists  = np.sort(dist)[0:count]
     elif distance == "cosine":
         dist = []
@@ -71,7 +72,8 @@ def get_similar_art(extracted_features, new_art_ef, test, feature_df, df, count=
             dist.append(getCosineSimilarity(feature.reshape(1,extracted_features.shape[1]), new_art_ef))
         indices = np.argsort(dist)[0:count]
         indices = eliminate_dup(test, indices, feature_df)
-        indices = np.append(indices, np.argsort(dist)[count])
+        if len(indices) < 5:
+            indices = np.append(indices, np.argsort(dist)[count])
         pdists  = np.sort(dist)[0:count]
     elif distance == "rmse":
         dist = []
@@ -79,7 +81,8 @@ def get_similar_art(extracted_features, new_art_ef, test, feature_df, df, count=
             dist.append(rmse(feature.reshape(1,extracted_features.shape[1]), new_art_ef))
         indices = np.argsort(dist)[0:count]
         indices = eliminate_dup(test, indices, feature_df)
-        indices = np.append(indices, np.argsort(dist)[count])
+        if len(indices) < 5:
+            indices = np.append(indices, np.argsort(dist)[count])
         pdists  = np.sort(dist)[0:count]
 
     min_elements =  np.array(dist)[indices]
