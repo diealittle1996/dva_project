@@ -1,14 +1,19 @@
 import streamlit as st
 import pandas as pd
 import numpy as np
+import folium
 from google.cloud import storage
 from google.cloud import bigquery
 from google.oauth2 import service_account
 import os
 import db_dtypes
 from PIL import Image
-from image_matching import get_similar_art, get_image, new_image_as_df, extract_features_VGG
+from image_matching import get_similar_art, get_image, new_image_as_df, extract_features_VGG, display_test_image
 from sewar.full_ref import mse, rmse, uqi, scc, msssim, vifp
+from streamlit_folium import folium_static
+import json
+from pathlib import Path
+import cv2 as cv
 
 
 credentials = service_account.Credentials.from_service_account_info(
@@ -116,7 +121,7 @@ image_file = st.file_uploader("Upload Images", type=["png","jpg","jpeg"])
 if image_file is not None:
     file_details = {"filename":image_file.name, "filetype":image_file.type,
                   "filesize":image_file.size}
-    new_line = "\n"
+    new_line = " \n "
     info = [f"{key}: {file_details[key]}" for key in file_details.keys()]
     image_details = f"Image details:{new_line}{new_line.join(map(str, info))}"
     st.write(image_details)
