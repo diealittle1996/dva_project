@@ -6,10 +6,9 @@ from google.cloud import storage
 from google.cloud import bigquery
 from google.oauth2 import service_account
 import os
-import io
 import db_dtypes
 from PIL import Image
-from image_matching import get_similar_art, get_image, new_image_as_df, extract_features_VGG, display_test_image, download_blob_into_memory
+from image_matching import get_similar_art, get_image, new_image_as_df, extract_features_VGG, display_test_image, download_image
 from sewar.full_ref import mse, rmse, uqi, scc, msssim, vifp
 from streamlit_folium import folium_static
 import json
@@ -35,21 +34,6 @@ Now, we invite you to delve into the world of art, find similar artworks, and fo
 st.sidebar.markdown("## Side Panel")
 st.sidebar.markdown("Use this panel to explore the dataset and create own viz.")
 
-def download_image(_id):
-    _id = str(_id)
-    try:
-        int(_id.replace('TP_',''))
-        im = download_blob_into_memory('dva_paintings', f'{_id}.jpg')
-    except:
-        try:
-            im = download_blob_into_memory('dva_paintings', f'{_id}.jpg')
-        except:
-            im = Image.open("dva_paintings/"+_id)
-            myImage = np.array(im)
-            return myImage
-    fp = io.BytesIO(im)
-    myImage = mpimg.imread(fp, format='jpeg')
-    return myImage
     
 def display_images(test_img, cap_fields, ids, df):
 
