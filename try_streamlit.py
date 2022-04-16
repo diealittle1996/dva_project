@@ -34,8 +34,22 @@ Now, we invite you to delve into the world of art, find similar artworks, and fo
 st.sidebar.markdown("## Side Panel")
 st.sidebar.markdown("Use this panel to explore the dataset and create own viz.")
 
+def download_image(_id):
+    try:
+        int(_id.replace('TP_',''))
+        im = download_blob_into_memory('dva_paintings', f'{_id}.jpg')
+    except:
+        try:
+            im = download_blob_into_memory('dva_paintings', f'{_id}')
+        except:
+            im = Image.open("dva_paintings/"+_id)
+            myImage = np.array(im)
+            return myImage
+    fp = io.BytesIO(im)
+    myImage = mpimg.imread(fp, format='jpeg')
+    return myImage
+    
 def display_images(test_img, cap_fields, ids, df):
-    PATH = "images"
 
     st.subheader("=" * 10 + "  User image  " + "=" * 10)
     display_test_image(test_img)
@@ -46,7 +60,6 @@ def display_images(test_img, cap_fields, ids, df):
     st.subheader("\n", "=" * 10 + f"  Top {num_similar_paintings} Similar Images  " + "=" * 10)
 
     # This part assumes all database images are stored locally in path/images folder.
-    imgs = [os.path.join(PATH, id) + ".jpg" for id in ids]
     # st.write(imgs)
 
     num_imgs = len(ids)
@@ -57,18 +70,18 @@ def display_images(test_img, cap_fields, ids, df):
         cols = st.columns(4)
 
         if idx < num_imgs:
-            cols[0].image(imgs[idx], width=150, caption=captions[ids[idx]][fields[0]])
+            cols[0].image(download_image(ids[idx]), width=150, caption=captions[ids[idx]][fields[0]])
         idx += 1
 
         if idx < num_imgs:
-            cols[1].image(imgs[idx], width=150, caption=captions[ids[idx]][fields[0]])
+            cols[1].image(download_image(ids[idx]), width=150, caption=captions[ids[idx]][fields[0]])
         idx += 1
 
         if idx < num_imgs:
-            cols[2].image(imgs[idx], width=150, caption=captions[ids[idx]][fields[0]])
+            cols[2].image(download_image(ids[idx]), width=150, caption=captions[ids[idx]][fields[0]])
         idx += 1
         if idx < num_imgs:
-            cols[3].image(imgs[idx], width=150, caption=captions[ids[idx]][fields[0]])
+            cols[3].image(download_image(ids[idx]), width=150, caption=captions[ids[idx]][fields[0]])
             idx = idx + 1
         else:
             break
@@ -121,7 +134,7 @@ image_file = st.file_uploader("Upload Images", type=["png","jpg","jpeg"])
 if image_file is not None:
     file_details = {"filename":image_file.name, "filetype":image_file.type,
                   "filesize":image_file.size}
-    new_line = " \n "
+    new_line = " \n\n\n "
     info = [f"{key}: {file_details[key]}" for key in file_details.keys()]
     image_details = f"Image details:{new_line}{new_line.join(map(str, info))}"
     st.write(image_details)
@@ -129,7 +142,7 @@ if image_file is not None:
     with open(os.path.join("dva_paintings",image_file.name),"wb") as f:
         f.write((image_file).getbuffer())
         st.success("New Image Received")
-    button = st.button('Generate recommendations')
+        
     user_input = st.text_input("How many similar images would you like to find?",
                                help="Try entering a number larger than 5.")
     if len(user_input) != 0:
