@@ -13,3 +13,4 @@ keras==2.4.3
 sklearn
 folium
 streamlit_folium
+opencv-python
