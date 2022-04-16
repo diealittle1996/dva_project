@@ -6,6 +6,7 @@ from google.cloud import storage
 from google.cloud import bigquery
 from google.oauth2 import service_account
 import os
+import io
 import db_dtypes
 from PIL import Image
 from image_matching import get_similar_art, get_image, new_image_as_df, extract_features_VGG, display_test_image, download_blob_into_memory
@@ -35,7 +36,6 @@ st.sidebar.markdown("## Side Panel")
 st.sidebar.markdown("Use this panel to explore the dataset and create own viz.")
 
 def download_image(_id):
-    st.write(_id)
     _id = str(_id)
     try:
         int(_id.replace('TP_',''))
