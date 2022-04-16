@@ -21,6 +21,7 @@ credentials = service_account.Credentials.from_service_account_info(
 )
 client = bigquery.Client(credentials=credentials)
 
+st.session_state.update(st.session_state)
 
 st.markdown("# Self Exploratory Visualization on the World of Paintings")
 st.markdown("Explore the dataset to know more about artistic heritage")
