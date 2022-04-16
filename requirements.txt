@@ -11,3 +11,5 @@ matplotlib==3.3.2
 TensorFlow
 keras==2.4.3
 sklearn
+folium
+streamlit_folium
