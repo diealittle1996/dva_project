@@ -24,6 +24,22 @@ def download_blob_into_memory(bucket_name, blob_name):
     contents = blob.download_as_string()
     return contents
 
+def download_image(_id):
+    _id = str(_id)
+    try:
+        int(_id.replace('TP_',''))
+        im = download_blob_into_memory('dva_paintings', f'{_id}.jpg')
+    except:
+        try:
+            im = download_blob_into_memory('dva_paintings', f'{_id}.jpg')
+        except:
+            im = Image.open("dva_paintings/"+_id)
+            myImage = np.array(im)
+            return myImage
+    fp = io.BytesIO(im)
+    myImage = mpimg.imread(fp, format='jpeg')
+    return myImage
+
 def display_test_image(test_image):
     st.image(Image.open("dva_paintings/"+test_image))
 
