@@ -35,12 +35,14 @@ st.sidebar.markdown("## Side Panel")
 st.sidebar.markdown("Use this panel to explore the dataset and create own viz.")
 
 def download_image(_id):
+    st.write(_id)
+    _id = str(_id)
     try:
         int(_id.replace('TP_',''))
         im = download_blob_into_memory('dva_paintings', f'{_id}.jpg')
     except:
         try:
-            im = download_blob_into_memory('dva_paintings', f'{_id}')
+            im = download_blob_into_memory('dva_paintings', f'{_id}.jpg')
         except:
             im = Image.open("dva_paintings/"+_id)
             myImage = np.array(im)
@@ -80,6 +82,7 @@ def display_images(test_img, cap_fields, ids, df):
         if idx < num_imgs:
             cols[2].image(download_image(ids[idx]), width=150, caption=captions[ids[idx]][fields[0]])
         idx += 1
+        
         if idx < num_imgs:
             cols[3].image(download_image(ids[idx]), width=150, caption=captions[ids[idx]][fields[0]])
             idx = idx + 1
