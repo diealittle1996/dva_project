@@ -8,7 +8,7 @@ from google.oauth2 import service_account
 import os
 import db_dtypes
 from PIL import Image
-from image_matching import get_similar_art, get_image, new_image_as_df, extract_features_VGG, display_test_image
+from image_matching import get_similar_art, get_image, new_image_as_df, extract_features_VGG, display_test_image, download_blob_into_memory
 from sewar.full_ref import mse, rmse, uqi, scc, msssim, vifp
 from streamlit_folium import folium_static
 import json
