@@ -29,7 +29,52 @@ Now, we invite you to delve into the world of art, find similar artworks, and fo
 st.sidebar.markdown("## Side Panel")
 st.sidebar.markdown("Use this panel to explore the dataset and create own viz.")
 
+def display_images(test_img, cap_fields, ids, df):
+    PATH = "images"
 
+    st.subheader("=" * 10 + "  User image  " + "=" * 10)
+    display_test_image(test_img)
+
+    captions = {id: {field: df.loc[df.objectID == str(id)][field].values[0] for field in cap_fields} for id in ids}
+    # st.write(captions)
+
+    st.subheader("\n", "=" * 10 + f"  Top {num_similar_paintings} Similar Images  " + "=" * 10)
+
+    # This part assumes all database images are stored locally in path/images folder.
+    imgs = [os.path.join(PATH, id) + ".jpg" for id in ids]
+    # st.write(imgs)
+
+    num_imgs = len(ids)
+
+    st.write("\n", "=" * 20 + f"  Top {num_imgs} Similar Images  " + "=" * 20)
+    idx = 0
+    for _ in range(num_imgs - 1):
+        cols = st.columns(4)
+
+        if idx < num_imgs:
+            cols[0].image(imgs[idx], width=150, caption=captions[ids[idx]][fields[0]])
+        idx += 1
+
+        if idx < num_imgs:
+            cols[1].image(imgs[idx], width=150, caption=captions[ids[idx]][fields[0]])
+        idx += 1
+
+        if idx < num_imgs:
+            cols[2].image(imgs[idx], width=150, caption=captions[ids[idx]][fields[0]])
+        idx += 1
+        if idx < num_imgs:
+            cols[3].image(imgs[idx], width=150, caption=captions[ids[idx]][fields[0]])
+            idx = idx + 1
+        else:
+            break
+
+# Callback functions to preserve button functionalities. Not working yet.
+def disp_imgs_CB():
+    st.session_state.active_page = "display"
+
+def choropleth_CB():
+    st.session_state.active_page = "choropleth"
+    
 @st.cache(persist=True, show_spinner=True)
 
 def load_data(nrows):
@@ -43,6 +88,8 @@ data_load_state = st.text('Loading dataset...')
 df, full_df = load_data(1000)
 data_load_state.text('Loading dataset...Completed!')
 
+if 'active_page' not in st.session_state:
+    st.session_state.active_page = 'Home'
 
 st.title('Quick  Explore')
 st.sidebar.subheader(' Quick  Explore')
@@ -69,32 +116,102 @@ image_file = st.file_uploader("Upload Images", type=["png","jpg","jpeg"])
 if image_file is not None:
     file_details = {"filename":image_file.name, "filetype":image_file.type,
                   "filesize":image_file.size}
-    st.write(file_details)
+    new_line = "\n"
+    info = [f"{key}: {file_details[key]}" for key in file_details.keys()]
+    image_details = f"Image details:{new_line}{new_line.join(map(str, info))}"
+    st.write(image_details)
+    
     with open(os.path.join("dva_paintings",image_file.name),"wb") as f:
         f.write((image_file).getbuffer())
         st.success("New Image Received")
     button = st.button('Generate recommendations')
-    if button:
-        dta = pd.read_csv("cleaned_data_2.csv")
+    user_input = st.text_input("How many similar images would you like to find?",
+                               help="Try entering a number larger than 5.")
+    if len(user_input) != 0:
+        num_similar_paintings = int(user_input)
+
+        # Load necessary info.
+        processing = st.text("Processing...")
+        data = pd.read_csv("cleaned_data_3.csv")
         ef_vgg = np.load('VGG_features.npy')
 
         TEST_IMAGE = image_file.name
-        test_df_1 = new_image_as_df(TEST_IMAGE)
-        ef_test_vgg = extract_features_VGG(test_df_1)
+        test_image_df = new_image_as_df(TEST_IMAGE)
+        ef_test_vgg = extract_features_VGG(test_image_df)
 
-        mylist, ordered_indices = get_similar_art(ef_vgg, ef_test_vgg, test=TEST_IMAGE, feature_df=dta, df=full_df.astype(str), distance="rmse")
+        # Find similar paintings.
+        similar_img_ids, ordered_indices = get_similar_art(ef_vgg,
+                                                           ef_test_vgg,
+                                                           test=TEST_IMAGE,
+                                                           feature_df=data,
+                                                           df=full_df.astype(str),
+                                                           count=num_similar_paintings,
+                                                           distance="rmse")
 
-        new_art = get_image(TEST_IMAGE)
-        similarity_vgg_euclidean = {"id":[],'mse': [], 'rmse': [],"scc":[],"uqi":[],"msssim":[],"vifp":[]}
-        for i in range(5):
-            similar_art = get_image(mylist[i])
-            similarity_vgg_euclidean["id"].append(mylist[i])
-            similarity_vgg_euclidean["mse"].append(mse(new_art,similar_art))
-            similarity_vgg_euclidean["rmse"].append(rmse(new_art,similar_art))
-            similarity_vgg_euclidean["scc"].append(scc(new_art,similar_art))
-            similarity_vgg_euclidean["uqi"].append(uqi(new_art,similar_art))
-            similarity_vgg_euclidean["msssim"].append(msssim(new_art,similar_art).astype('float32'))
-            similarity_vgg_euclidean["vifp"].append(vifp(new_art,similar_art))
-        similarity_vgg_euclidean_df = pd.DataFrame(similarity_vgg_euclidean)
-        st.write("avg mse: ", np.mean(similarity_vgg_euclidean_df["mse"]))
-        st.write(similarity_vgg_euclidean_df)
+        # Create dataframe as input for choropleth.
+        # map_info_df made from {"Region": [unique contry names], "Counts": [count_per_country]}
+        countries = [data.loc[data.objectID == str(id)]["Country"].values[0] for id in similar_img_ids]
+        countries_unique = np.unique(countries)
+        counts = [countries.count(x) for x in countries_unique]
+        map_info = {"Region": countries_unique,
+                    "Counts": counts}
+        map_info_df = pd.DataFrame(map_info)
+
+        processing.text("Processing... Completed!")
+
+        # Display buttons.
+        col1, col2 = st.columns(2)
+
+        gen_rec_button = col1.button(f'Display your {num_similar_paintings} recommendations', on_click=disp_imgs_CB)
+        gen_choropleth_button = col2.button("Generate a choropleth", on_click=choropleth_CB)
+
+        # gen_rec_button = st.button(f'Display your {num_similar_paintings} recommendations', key=1)
+        # gen_choropleth_button = st.button("Generate a choropleth", key=2)
+
+        if st.session_state.active_page == "display":
+
+            fields = ["Title", "ArtistName", "TimePeriod", "Country"]
+
+            display_images(TEST_IMAGE, fields, similar_img_ids, data)
+
+        if st.session_state.active_page == "choropleth":
+            load_choropleth = st.empty()
+            load_choropleth.markdown("Loading choropleth...")
+
+            # Folium documentation: https://python-visualization.github.io/folium/modules.html
+            # https://python-visualization.github.io/folium/quickstart.html#Choropleth-maps
+
+            # Initialize map centered on Beijing.
+            map = folium.Map(location=[35.8617, 104.1954], zoom_start=3)
+
+            folium.Choropleth(
+                geo_data=f"countries.geojson",
+                name="choropleth",
+                data=map_info_df,
+                columns=["Region", "Counts"],
+                key_on="feature.properties.ADMIN",
+                fill_color="YlGn",
+                fill_opacity=0.7,
+                line_opacity=0.2,
+                legend_name="Count of similar paintings by country"
+            ).add_to(map)
+
+            # Displays map.
+            folium_static(map)
+            load_choropleth.empty()
+            st.caption("This map displays the country of origin for similar artworks. Hover over the country to see the corresponding artworks.\n You may need to zoom out to see all the relevant countries.")
+            
+#         new_art = get_image(TEST_IMAGE)
+#         similarity_vgg_euclidean = {"id":[],'mse': [], 'rmse': [],"scc":[],"uqi":[],"msssim":[],"vifp":[]}
+#         for i in range(5):
+#             similar_art = get_image(mylist[i])
+#             similarity_vgg_euclidean["id"].append(mylist[i])
+#             similarity_vgg_euclidean["mse"].append(mse(new_art,similar_art))
+#             similarity_vgg_euclidean["rmse"].append(rmse(new_art,similar_art))
+#             similarity_vgg_euclidean["scc"].append(scc(new_art,similar_art))
+#             similarity_vgg_euclidean["uqi"].append(uqi(new_art,similar_art))
+#             similarity_vgg_euclidean["msssim"].append(msssim(new_art,similar_art).astype('float32'))
+#             similarity_vgg_euclidean["vifp"].append(vifp(new_art,similar_art))
+#         similarity_vgg_euclidean_df = pd.DataFrame(similarity_vgg_euclidean)
+#         st.write("avg mse: ", np.mean(similarity_vgg_euclidean_df["mse"]))
+#         st.write(similarity_vgg_euclidean_df)
