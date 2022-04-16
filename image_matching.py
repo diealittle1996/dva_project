@@ -90,27 +90,12 @@ def get_similar_art(extracted_features, new_art_ef, test, feature_df, df, count=
     min_elements_order = np.argsort(min_elements)
     ordered_indices = indices[min_elements_order]
 
-    st.write("="*20 + "input product image" + "="*20)
-    display_test_image(test)
-
     mylist = []
-    st.write("\n","="*20 + "Similar Images" + "="*20)
     i=-1
     for index in ordered_indices:
         i+=1
         objectID = index_to_id(index, feature_df)
         mylist.append(objectID)
-        get_image(objectID, 1)
-        st.write('Distance from input image:' + str(pdists[i]))
-        try:
-            out = {}
-            values = df.loc[df.objectID==objectID].values[0]
-            for x, y in zip(df.columns, values):
-                if (y != "None")&(y != "<NA>"):
-                    out[x] = y
-            st.write(out)
-        except:
-            st.write(objectID)
     return mylist, ordered_indices
 
 def extract_features_VGG(dataframe, img_width=224, img_height=224, batch_size=64, save=False):
