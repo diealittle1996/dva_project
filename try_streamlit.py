@@ -83,7 +83,7 @@ def disp_imgs_CB():
 def choropleth_CB():
     st.session_state.active_page = "choropleth"
     
-@st.cache(persist=True, show_spinner=True)
+@st.cache(persist=True, show_spinner=True, suppress_st_warning=True)
 def load_data(nrows):
     query = f"SELECT * FROM `cse6242-343901.metobjects.table1` LIMIT {nrows}"
     query2 = "SELECT * FROM `cse6242-343901.metobjects.table1`"
