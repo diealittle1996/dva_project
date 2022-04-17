@@ -208,11 +208,11 @@ if image_file is not None:
         f.write((image_file).getbuffer())
         st.success("New Image Received")
         
-    if len(selected_countries) >0:
+    if len(selected_countries) > 0:
             idx = list(data[~data['Country'].isin(selected_countries)].index)
-        if len(selected_periods) >0:
-            idx += list(data[~data['Century'].isin(selected_periods)].index)
-        st.write(len(idx), "image ruled out!")
+    if len(selected_periods) > 0:
+        idx += list(data[~data['Century'].isin(selected_periods)].index)
+    st.write(len(idx), "image ruled out!")
         
     user_input = st.text_input("How many similar images would you like to find?",
                                help="Try entering a number larger than 5.")
