@@ -167,27 +167,30 @@ st.subheader('Dataset Quick Look:')
 st.write(df_filtered.head())
 st.write(len(df_filtered), "data points left")
 
-val = list(df_filtered['Century'].values)
-counts = []
-for u in periods+["Unavailable"]:
-    counts.append(val.count(u))
+if len(df_filtered) < 10:
+    st.markdown("#### Warning: too few data points!")
+else:
+    val = list(df_filtered['Century'].values)
+    counts = []
+    for u in periods+["Unavailable"]:
+        counts.append(val.count(u))
 
-freq_df = df_filtered.groupby(['Century','Country'])['Century'].size().unstack('Country').fillna(0)
-new_index = periods+["Unavailable"]
-freq_df = freq_df.reindex(new_index)
-fig, ax = plt.subplots()
-fig.set_size_inches(15, 6)
-freq_df.plot(kind="bar", stacked=True, ax=ax, legend=False)
-ax.set_title("Period Distribution in the Selected Countries (Interactive)")
-ax.set_xlabel("Century")
-ax.set_ylabel("Frequency")
-ax.legend(bbox_to_anchor= (1.02, 1))
-ax.set_xticklabels(periods+["Unavailable"])
+    freq_df = df_filtered.groupby(['Century','Country'])['Century'].size().unstack('Country').fillna(0)
+    new_index = periods+["Unavailable"]
+    freq_df = freq_df.reindex(new_index)
+    fig, ax = plt.subplots()
+    fig.set_size_inches(15, 6)
+    freq_df.plot(kind="bar", stacked=True, ax=ax, legend=False)
+    ax.set_title("Period Distribution in the Selected Countries (Interactive)")
+    ax.set_xlabel("Century")
+    ax.set_ylabel("Frequency")
+    ax.legend(bbox_to_anchor= (1.02, 1))
+    ax.set_xticklabels(periods+["Unavailable"])
 
-for i, v in enumerate(counts):
-    plt.text(i-0.12, v+5, str(v))
+    for i, v in enumerate(counts):
+        plt.text(i-0.12, v+5, str(v))
 
-st.pyplot(fig)
+    st.pyplot(fig)
  
 
 st.markdown("#### \**Please beware that filters will be applied to the image matching algorithm. Results may be compromised if too many filters are applied. \**")
