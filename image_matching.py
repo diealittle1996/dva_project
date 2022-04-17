@@ -74,7 +74,7 @@ def eliminate_dup(test, indices, feature_df):
         new_indices = indices
     return new_indices
 
-def get_similar_art(extracted_features, new_art_ef, test, feature_df, df, count=5,distance = "euclidean"):
+def get_similar_art(extracted_features, new_art_ef, test, feature_df, count=5,distance = "euclidean"):
     if distance == "euclidean":
         dist = pairwise_distances(extracted_features, new_art_ef).T[0]
         indices = np.argsort(dist)[0:count]
