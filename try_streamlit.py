@@ -208,19 +208,26 @@ if image_file is not None:
         f.write((image_file).getbuffer())
         st.success("New Image Received")
         
+    if len(selected_countries) >0:
+            idx = list(data[~data['Country'].isin(selected_countries)].index)
+        if len(selected_periods) >0:
+            idx += list(data[~data['Century'].isin(selected_periods)].index)
+        st.write(len(idx), "image ruled out!")
+        
     user_input = st.text_input("How many similar images would you like to find?",
                                help="Try entering a number larger than 5.")
-    if len(user_input) != 0:
+    try:
+        int(user_input)
+    except:
+        st.write("Please enter an integer!")
+    if int(user_input) > len(data)-len(idx):
+        st.write(f"Requested number out of data range! Please enter a number smaller than {len(data)-len(idx)}.")
+    elif len(user_input) != 0:
         num_similar_paintings = int(user_input)
 
         # Load necessary info.
         processing = st.text("Processing...")
         ef_vgg = np.load('VGG_features.npy')
-        if len(selected_countries) >0:
-            idx = list(data[~data['Country'].isin(selected_countries)].index)
-        if len(selected_periods) >0:
-            idx += list(data[~data['Century'].isin(selected_periods)].index)
-        st.write(len(idx), "image ruled out!")
         ef_vgg = np.delete(ef_vgg, list(set(idx)), 0)
         data2 = data[~data.index.isin(idx)].reset_index(drop=True).copy()
 
