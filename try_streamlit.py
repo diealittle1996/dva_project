@@ -192,7 +192,7 @@ st.pyplot(fig)
 
 st.markdown("#### \**Please beware that filters will be applied to the image matching algorithm. Results may be compromised if too many filters are applied. \**")
 st.subheader("Submit Your Image to Find Visually Similar Ones:")
-image_file = st.file_uploader("Upload Images", type=["png","jpg","jpeg"])
+image_file = st.file_uploader("Upload Image", type=["png","jpg","jpeg"])
 selected_countries = [k for k,v in filters['Country'].items() if v==True]
 selected_periods = [k for k,v in filters['Century'].items() if v==True]
 
@@ -216,87 +216,87 @@ if image_file is not None:
         
     user_input = st.text_input("How many similar images would you like to find?",
                                help="Try entering a number larger than 5.")
-    try:
-        int(user_input)
-    except:
-        st.write("Please enter an integer!")
-    if int(user_input) > len(data)-len(idx):
-        st.write(f"Requested number out of data range! Please enter a number smaller than {len(data)-len(idx)}.")
-    elif len(user_input) != 0:
-        num_similar_paintings = int(user_input)
+    if len(user_input) != 0:
+        try:
+            if (int(user_input) > (len(data)-len(idx))) | (int(user_input) < 0):
+                st.write(f"Requested number out of data range! Please enter a positive number smaller than {len(data)-len(idx)}.")
+            else:
+                num_similar_paintings = int(user_input)
 
-        # Load necessary info.
-        processing = st.text("Processing...")
-        ef_vgg = np.load('VGG_features.npy')
-        ef_vgg = np.delete(ef_vgg, list(set(idx)), 0)
-        data2 = data[~data.index.isin(idx)].reset_index(drop=True).copy()
+                # Load necessary info.
+                processing = st.text("Processing...")
+                ef_vgg = np.load('VGG_features.npy')
+                ef_vgg = np.delete(ef_vgg, list(set(idx)), 0)
+                data2 = data[~data.index.isin(idx)].reset_index(drop=True).copy()
 
-        TEST_IMAGE = image_file.name
-        test_image_df = new_image_as_df(TEST_IMAGE)
-        ef_test_vgg = extract_features_VGG(test_image_df)
+                TEST_IMAGE = image_file.name
+                test_image_df = new_image_as_df(TEST_IMAGE)
+                ef_test_vgg = extract_features_VGG(test_image_df)
 
-        # Find similar paintings.
-        similar_img_ids, ordered_indices = get_similar_art(ef_vgg,
-                                                           ef_test_vgg,
-                                                           test=TEST_IMAGE,
-                                                           feature_df=data2,
-                                                           df=full_df.astype(str),
-                                                           count=num_similar_paintings,
-                                                           distance="rmse")
+                # Find similar paintings.
+                similar_img_ids, ordered_indices = get_similar_art(ef_vgg,
+                                                                   ef_test_vgg,
+                                                                   test=TEST_IMAGE,
+                                                                   feature_df=data2,
+                                                                   df=full_df.astype(str),
+                                                                   count=num_similar_paintings,
+                                                                   distance="rmse")
 
-        # Create dataframe as input for choropleth.
-        # map_info_df made from {"Region": [unique contry names], "Counts": [count_per_country]}
-        countries = [data.loc[data.objectID == str(id)]["Country"].values[0] for id in similar_img_ids]
-        countries_unique = np.unique(countries)
-        counts = [countries.count(x) for x in countries_unique]
-        map_info = {"Region": countries_unique,
-                    "Counts": counts}
-        map_info_df = pd.DataFrame(map_info)
+                # Create dataframe as input for choropleth.
+                # map_info_df made from {"Region": [unique contry names], "Counts": [count_per_country]}
+                countries = [data.loc[data.objectID == str(id)]["Country"].values[0] for id in similar_img_ids]
+                countries_unique = np.unique(countries)
+                counts = [countries.count(x) for x in countries_unique]
+                map_info = {"Region": countries_unique,
+                            "Counts": counts}
+                map_info_df = pd.DataFrame(map_info)
 
-        processing.text("Processing... Completed!")
+                processing.text("Processing... Completed!")
 
-        # Display buttons.
-        col1, col2 = st.columns(2)
+                # Display buttons.
+                col1, col2 = st.columns(2)
 
-        gen_rec_button = col1.button(f'Display your {num_similar_paintings} recommendations', on_click=disp_imgs_CB)
-        gen_choropleth_button = col2.button("Generate a choropleth", on_click=choropleth_CB)
+                gen_rec_button = col1.button(f'Display your {num_similar_paintings} recommendations', on_click=disp_imgs_CB)
+                gen_choropleth_button = col2.button("Generate a choropleth", on_click=choropleth_CB)
 
-        # gen_rec_button = st.button(f'Display your {num_similar_paintings} recommendations', key=1)
-        # gen_choropleth_button = st.button("Generate a choropleth", key=2)
+                # gen_rec_button = st.button(f'Display your {num_similar_paintings} recommendations', key=1)
+                # gen_choropleth_button = st.button("Generate a choropleth", key=2)
 
-        if st.session_state.active_page == "display":
+                if st.session_state.active_page == "display":
 
-            fields = ["Title", "ArtistName", "TimePeriod", "Country"]
+                    fields = ["Title", "ArtistName", "TimePeriod", "Country"]
 
-            display_images(TEST_IMAGE, fields, similar_img_ids, data)
+                    display_images(TEST_IMAGE, fields, similar_img_ids, data)
 
-        if st.session_state.active_page == "choropleth":
-            load_choropleth = st.empty()
-            load_choropleth.markdown("Loading choropleth...")
+                if st.session_state.active_page == "choropleth":
+                    load_choropleth = st.empty()
+                    load_choropleth.markdown("Loading choropleth...")
 
-            # Folium documentation: https://python-visualization.github.io/folium/modules.html
-            # https://python-visualization.github.io/folium/quickstart.html#Choropleth-maps
+                    # Folium documentation: https://python-visualization.github.io/folium/modules.html
+                    # https://python-visualization.github.io/folium/quickstart.html#Choropleth-maps
 
-            # Initialize map centered on Beijing.
-            map = folium.Map(location=[35.8617, 104.1954], zoom_start=3)
+                    # Initialize map centered on Beijing.
+                    map = folium.Map(location=[35.8617, 104.1954], zoom_start=3)
 
-            folium.Choropleth(
-                geo_data=f"countries.geojson",
-                name="choropleth",
-                data=map_info_df,
-                columns=["Region", "Counts"],
-                key_on="feature.properties.ADMIN",
-                fill_color="YlGn",
-                fill_opacity=0.7,
-                line_opacity=0.2,
-                legend_name="Count of similar paintings by country"
-            ).add_to(map)
+                    folium.Choropleth(
+                        geo_data=f"countries.geojson",
+                        name="choropleth",
+                        data=map_info_df,
+                        columns=["Region", "Counts"],
+                        key_on="feature.properties.ADMIN",
+                        fill_color="YlGn",
+                        fill_opacity=0.7,
+                        line_opacity=0.2,
+                        legend_name="Count of similar paintings by country"
+                    ).add_to(map)
 
-            # Displays map.
-            folium_static(map)
-            load_choropleth.empty()
-            st.caption("This map displays the country of origin for similar artworks. Hover over the country to see the corresponding artworks.\n You may need to zoom out to see all the relevant countries.")
-            
+                    # Displays map.
+                    folium_static(map)
+                    load_choropleth.empty()
+                    st.caption("This map displays the country of origin for similar artworks. Hover over the country to see the corresponding artworks.\n You may need to zoom out to see all the relevant countries.")
+
+        except:
+            st.write("Please enter an integer!")
 #         new_art = get_image(TEST_IMAGE)
 #         similarity_vgg_euclidean = {"id":[],'mse': [], 'rmse': [],"scc":[],"uqi":[],"msssim":[],"vifp":[]}
 #         for i in range(5):
