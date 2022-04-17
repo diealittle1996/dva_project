@@ -15,6 +15,7 @@ import json
 from pathlib import Path
 import cv2 as cv
 
+st.set_page_config(layout="wide")
 
 credentials = service_account.Credentials.from_service_account_info(
     st.secrets["gcp_service_account"]
@@ -32,8 +33,8 @@ Now, we invite you to delve into the world of art, find similar artworks, and fo
 ''')
 
 
-st.sidebar.markdown("## Side Panel")
-st.sidebar.markdown("Use this panel to explore the dataset and create own viz.")
+st.sidebar.markdown("## Geographic Filter")
+st.sidebar.markdown("Use this panel to filter for your countries of interest.")
 
     
 def display_images(test_img, cap_fields, ids, df):
@@ -82,7 +83,6 @@ def choropleth_CB():
     st.session_state.active_page = "choropleth"
     
 @st.cache(persist=True, show_spinner=True)
-
 def load_data(nrows):
     query = f"SELECT * FROM `cse6242-343901.metobjects.table1` LIMIT {nrows}"
     query2 = "SELECT * FROM `cse6242-343901.metobjects.table1`"
@@ -91,33 +91,109 @@ def load_data(nrows):
     return df, full_df
 
 data_load_state = st.text('Loading dataset...')
+data = pd.read_csv("cleaned_data_4.csv")
 df, full_df = load_data(1000)
 data_load_state.text('Loading dataset...Completed!')
 
 if 'active_page' not in st.session_state:
     st.session_state.active_page = 'Home'
 
-st.title('Quick  Explore')
-st.sidebar.subheader(' Quick  Explore')
-st.markdown("Tick the box on the side panel to explore the dataset.")
-if st.sidebar.checkbox('Dataset Quick Look'):
-    st.subheader('Dataset Quick Look:')
-    st.write(df.head())
-if st.sidebar.checkbox("Show Columns"):
-    st.subheader('Show Columns List')
-    st.write(df.columns.to_list())
-if st.sidebar.checkbox('Statistical Description'):
-    st.subheader('Statistical Data Descripition')
-    df_types = pd.DataFrame(df.dtypes, columns=['Data Type'])
-    st.write(df_types.astype(str))
-    df['isHighlight'] = df['isHighlight'].apply(int)
-    st.write(df.describe())
-if st.sidebar.checkbox('Missing Values?'):
-    st.subheader('Missing values')
-    st.write(df.isnull().sum())
+st.sidebar.subheader("Filters")
+filters = {}
+filters['Country'] = {}
+filters['Century'] = {}
+geo = {
+"Asian": ['China', 'India', 'Japan', 'Korea', 'Nepal', 'Sri Lanka','Thailand'],
+"European": ['Austria', 'Belgium', 'Britain', 'Denmark', 'France', 'Ireland',
+   'Germany', 'Greece', 'Hungary', 'Italy', 'Netherlands', 'Norway', 'Russia', 'Spain', 'Sweden', 'Switzerland'],
+"Unavailable": ["Unavailable"]
+}
+
+selected = st.sidebar.multiselect(
+    "Which culture are you interested in?",
+    ["Asian", "European", "Unavailable"],
+    default=["Asian", "European", "Unavailable"]
+)
+
+try:
+    countries = []
+    for i in selected:
+        countries += geo[i]
+    for i in countries:
+        filters['Country'][i] = st.sidebar.checkbox(i, value=True, key=i)
+except:
+    st.markdown("## Please select at least one culture!")
+
+st.subheader("Time Filter")
+periods = ['Before 1000', "1000's", "1100's", "1200's", "1300's", "1400's","1500's",
+           "1600's", "1700's", "1800's", "1900's", "2000's"]
+choice = ["Filter by time slider", "Filter by checkbox"]
+choice = st.selectbox("Choose how you would like to filter time", choice)
+
+if choice == "Filter by time slider":
+    century = st.select_slider("Choose a continuous time period of interest", options = periods, value=('Before 1000', "2000's"))
+    begin, end = century
+    idx1 = periods.index(begin)
+    idx2 = periods.index(end)
+    for i in range(idx1, idx2+1):
+        filters['Century'][periods[i]] = True
+    filters['Century']['Unavailable'] = True
+else:
+    for i in periods:
+        filters['Century'][i] = st.checkbox(i, value=True, key=i)
+    filters['Century']['Unavailable'] = st.checkbox('Unavailable', value=True, key="time unavailable")
+
+def update_filter(filter_dict, df):
+    # Input is a dictionary of True/False labels
+    remove_list = []
+
+    # get list of IDs to remove
+    for bigkey in filter_dict:
+        for key, value in filter_dict[bigkey].items():
+            if value == False:
+                remove = list(df[df[bigkey] == key]['objectID'].values)
+                remove_list += remove
+        remove_list += list(df[~df[bigkey].isin(list(filter_dict[bigkey].keys()))]['objectID'].values)
+
+    # start with a full list
+    full_list = df['objectID'].values
+    filtered_list = [a for a in full_list if a not in remove_list]
+    return filtered_list
+
+filtered_ids = update_filter(filters, data)
+df_filtered = data.loc[data['objectID'].isin(filtered_ids)]
+st.subheader('Dataset Quick Look:')
+st.write(df_filtered.head())
+st.write(len(df_filtered), "data points left")
+
+val = list(df_filtered['Century'].values)
+counts = []
+for u in periods+["Unavailable"]:
+    counts.append(val.count(u))
+
+freq_df = df_filtered.groupby(['Century','Country'])['Century'].size().unstack('Country').fillna(0)
+new_index = periods+["Unavailable"]
+freq_df = freq_df.reindex(new_index)
+fig, ax = plt.subplots()
+fig.set_size_inches(15, 6)
+freq_df.plot(kind="bar", stacked=True, ax=ax, legend=False)
+ax.set_title("Period Distribution in the Selected Countries (Interactive)")
+ax.set_xlabel("Century")
+ax.set_ylabel("Frequency")
+ax.legend(bbox_to_anchor= (1.02, 1))
+ax.set_xticklabels(periods+["Unavailable"])
+
+for i, v in enumerate(counts):
+    plt.text(i-0.12, v+5, str(v))
+
+st.pyplot(fig)
  
-st.subheader("Provide Your Image to Find Visually Similar Ones:")
+
+st.markdown("#### \**Please beware that filters will be applied to the image matching algorithm. Results may be compromised if too many filters are applied. \**")
+st.subheader("Submit Your Image to Find Visually Similar Ones:")
 image_file = st.file_uploader("Upload Images", type=["png","jpg","jpeg"])
+selected_countries = [k for k,v in filters['Country'].items() if v==True]
+selected_periods = [k for k,v in filters['Century'].items() if v==True]
 
 if image_file is not None:
     file_details = {"filename":image_file.name, "filetype":image_file.type,
@@ -138,8 +214,14 @@ if image_file is not None:
 
         # Load necessary info.
         processing = st.text("Processing...")
-        data = pd.read_csv("cleaned_data_3.csv")
         ef_vgg = np.load('VGG_features.npy')
+        if len(selected_countries) >0:
+            idx = list(data[~data['Country'].isin(selected_countries)].index)
+        if len(selected_periods) >0:
+            idx += list(data[~data['Century'].isin(selected_periods)].index)
+        st.write(len(idx), "image ruled out!")
+        ef_vgg = np.delete(ef_vgg, list(set(idx)), 0)
+        data2 = data[~data.index.isin(idx)].reset_index(drop=True).copy()
 
         TEST_IMAGE = image_file.name
         test_image_df = new_image_as_df(TEST_IMAGE)
@@ -149,7 +231,7 @@ if image_file is not None:
         similar_img_ids, ordered_indices = get_similar_art(ef_vgg,
                                                            ef_test_vgg,
                                                            test=TEST_IMAGE,
-                                                           feature_df=data,
+                                                           feature_df=data2,
                                                            df=full_df.astype(str),
                                                            count=num_similar_paintings,
                                                            distance="rmse")
