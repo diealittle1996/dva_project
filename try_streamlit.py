@@ -18,10 +18,10 @@ import matplotlib.pyplot as plt
 
 st.set_page_config(layout="wide")
 
-credentials = service_account.Credentials.from_service_account_info(
-    st.secrets["gcp_service_account"]
-)
-client = bigquery.Client(credentials=credentials)
+# credentials = service_account.Credentials.from_service_account_info(
+#     st.secrets["gcp_service_account"]
+# )
+# client = bigquery.Client(credentials=credentials)
 
 st.session_state.update(st.session_state)
 
@@ -37,7 +37,7 @@ Now, we invite you to delve into the world of art, find similar artworks, and fo
 st.sidebar.markdown("## Geographic Filter")
 st.sidebar.markdown("Use this panel to filter for your countries of interest.")
 
-    
+@st.cache(persist=True, show_spinner=True, suppress_st_warning=True)   
 def display_images(test_img, cap_fields, ids, df):
 
     st.subheader("=" * 10 + "  User image  " + "=" * 10)
@@ -83,18 +83,20 @@ def disp_imgs_CB():
 def choropleth_CB():
     st.session_state.active_page = "choropleth"
     
-@st.cache(persist=True, show_spinner=True, suppress_st_warning=True)
-def load_data(nrows):
-    query = f"SELECT * FROM `cse6242-343901.metobjects.table1` LIMIT {nrows}"
-    query2 = "SELECT * FROM `cse6242-343901.metobjects.table1`"
-    df = client.query(query).to_dataframe()
-    full_df = client.query(query2).to_dataframe()
-    return df, full_df
+
+# def load_data(nrows):
+#     query = f"SELECT * FROM `cse6242-343901.metobjects.table1` LIMIT {nrows}"
+#     query2 = "SELECT * FROM `cse6242-343901.metobjects.table1`"
+#     df = client.query(query).to_dataframe()
+#     full_df = client.query(query2).to_dataframe()
+#     return df, full_df
 
 data_load_state = st.text('Loading dataset...')
 data = pd.read_csv("cleaned_data_4.csv")
-df, full_df = load_data(1000)
+# df, full_df = load_data(1000)
 data_load_state.text('Loading dataset...Completed!')
+if st.checkbox("Display Full Dataset"):
+    st.write(data)
 
 if 'active_page' not in st.session_state:
     st.session_state.active_page = 'Home'
@@ -241,7 +243,6 @@ if image_file is not None:
                                                                        ef_test_vgg,
                                                                        test=TEST_IMAGE,
                                                                        feature_df=data2,
-                                                                       df=full_df.astype(str),
                                                                        count=num_similar_paintings,
                                                                        distance="rmse")
 
