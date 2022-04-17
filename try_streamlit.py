@@ -14,6 +14,7 @@ from streamlit_folium import folium_static
 import json
 from pathlib import Path
 import cv2 as cv
+import matplotlib.pyplot as plt
 
 st.set_page_config(layout="wide")
 
