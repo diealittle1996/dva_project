@@ -18,9 +18,10 @@ import matplotlib.pyplot as plt
 
 st.set_page_config(layout="wide")
 
-# credentials = service_account.Credentials.from_service_account_info(
-#     st.secrets["gcp_service_account"]
-# )
+credentials = service_account.Credentials.from_service_account_info(
+    st.secrets["gcp_service_account"]
+)
+
 # client = bigquery.Client(credentials=credentials)
 
 st.session_state.update(st.session_state)
