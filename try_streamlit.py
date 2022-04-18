@@ -43,7 +43,8 @@ def display_images(test_img, cap_fields, ids, df):
 
     st.subheader("=" * 10 + "  User image  " + "=" * 10)
     display_test_image(test_img)
-
+    
+    # A dictionary of caption fields pulled from df with image id as key value.
     captions = {id: {field: df.loc[df.objectID == str(id)][field].values[0] for field in cap_fields} for id in ids}
     # st.write(captions)
 
@@ -77,14 +78,6 @@ def display_images(test_img, cap_fields, ids, df):
         else:
             break
 
-# Callback functions to preserve button functionalities. Not working yet.
-def disp_imgs_CB():
-    st.session_state.active_page = "display"
-
-def choropleth_CB():
-    st.session_state.active_page = "choropleth"
-    
-
 # def load_data(nrows):
 #     query = f"SELECT * FROM `cse6242-343901.metobjects.table1` LIMIT {nrows}"
 #     query2 = "SELECT * FROM `cse6242-343901.metobjects.table1`"
@@ -98,10 +91,7 @@ data = pd.read_csv("cleaned_data_4.csv")
 data_load_state.text('Loading dataset...Completed!')
 if st.checkbox("Display Full Dataset"):
     st.write(data)
-
-if 'active_page' not in st.session_state:
-    st.session_state.active_page = 'Home'
-
+    
 st.sidebar.subheader("Filters")
 filters = {}
 filters['Country'] = {}
@@ -256,49 +246,68 @@ if image_file is not None:
                                 "Counts": counts}
                     map_info_df = pd.DataFrame(map_info)
 
-                st.success("Done!")
+                st.success("Pre-processing completed!")
 
-                # Display buttons.
-                col1, col2 = st.columns(2)
+                # Display images.
+                # fields = ["Title", "ArtistName", "Country", "Century"]
+                # display_images(TEST_IMAGE, fields, similar_img_ids, data)
 
-                gen_rec_button = col1.button(f'Display your {num_similar_paintings} recommendations', on_click=disp_imgs_CB)
-                gen_choropleth_button = col2.button("Generate a choropleth", on_click=choropleth_CB)
+                load_choropleth = st.empty()
+                load_choropleth.markdown("Loading choropleth...")
 
-                # gen_rec_button = st.button(f'Display your {num_similar_paintings} recommendations', key=1)
-                # gen_choropleth_button = st.button("Generate a choropleth", key=2)
+                # Folium documentation: https://python-visualization.github.io/folium/modules.html
+                # https://python-visualization.github.io/folium/quickstart.html#Choropleth-maps
 
-                if st.session_state.active_page == "display":
+                # Initialize map centered on continent with highest frequency.
+                max_count_country = map_info_df.loc[[map_info_df["Counts"].idxmax()]]["Region"].values[0]
+                loc = [48.019, 66.923]
 
-                    fields = ["Title", "ArtistName", "TimePeriod", "Country"]
+                if max_count_country in geo["Asian"]:
+                    loc = [39.916, 116.383]
 
-                    display_images(TEST_IMAGE, fields, similar_img_ids, data)
+                if max_count_country in geo["European"]:
+                    loc = [50.378, 14.970]
 
-                if st.session_state.active_page == "choropleth":
-                    load_choropleth = st.empty()
-                    load_choropleth.markdown("Loading choropleth...")
+                map = folium.Map(location=loc, min_zoom=2, max_zoom=5, zoom_start=3)
+                geo_file = f"countries.geojson"
 
-                    # Folium documentation: https://python-visualization.github.io/folium/modules.html
-                    # https://python-visualization.github.io/folium/quickstart.html#Choropleth-maps
+                with open(geo_file, encoding="utf8") as f:
+                    map_data = geojson.load(f)
 
-                    # Initialize map centered on Beijing.
-                    map = folium.Map(location=[35.8617, 104.1954], zoom_start=3)
+                # st.write(map_data)
 
-                    folium.Choropleth(
-                        geo_data=f"countries.geojson",
-                        name="choropleth",
-                        data=map_info_df,
-                        columns=["Region", "Counts"],
-                        key_on="feature.properties.ADMIN",
-                        fill_color="YlGn",
-                        fill_opacity=0.7,
-                        line_opacity=0.2,
-                        legend_name="Count of similar paintings by country"
-                    ).add_to(map)
+                # Build tooltip.
+                tooltip_text = []
+                for i in range(len(countries_unique)):
+                    tooltip_text.append(
+                        f"Country name: {countries_unique[i]}\nNumber of recommended paintings: {counts[i]}"
+                    )
 
-                    # Displays map.
-                    folium_static(map)
-                    load_choropleth.empty()
-                    st.caption("This map displays the country of origin for similar artworks. Hover over the country to see the corresponding artworks.\n You may need to zoom out to see all the relevant countries.")
+                # st.text(tooltip_text)
+
+                for i, tip in enumerate(tooltip_text):
+                    map_data["features"][i]["properties"]['text'] = tip
+
+                st.text(map_data["features"][0]["properties"])
+
+                choropleth = folium.Choropleth(geo_data=map_data,
+                                               name="choropleth",
+                                               data=map_info_df,
+                                               columns=["Region", "Counts"],
+                                               key_on="feature.properties.ADMIN",
+                                               fill_color="YlGn",
+                                               fill_opacity=0.7,
+                                               line_opacity=0.2,
+                                               legend_name="Count of similar paintings by country"
+                                              ).add_to(map)
+
+                # Displays map.
+                choropleth.geojson.add_child(
+                    folium.features.GeoJsonTooltip(['ISO_A3'], labels=False)
+                )
+                folium_static(map)
+                load_choropleth.empty()
+                st.caption("This map displays the country of origin for similar artworks. You may need to zoom out to see all the relevant countries.")
 
         except:
             st.write("Please enter an integer!")
