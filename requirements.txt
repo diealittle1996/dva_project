@@ -13,4 +13,5 @@ keras==2.4.3
 sklearn
 folium
 streamlit_folium
+geojson
 opencv-python-headless==4.5.3.56
