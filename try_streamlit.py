@@ -214,6 +214,10 @@ if image_file is not None:
                                help="Try entering a number larger than 5.")
     if len(user_input) != 0:
         try:
+            int(user_input)
+        except:
+            st.write("Please enter an integer!")
+        else:
             if (int(user_input) > (len(data)-len(idx))) | (int(user_input) < 0):
                 st.write(f"Requested number out of data range! Please enter a positive number smaller than {len(data)-len(idx)}.")
             else:
@@ -249,8 +253,8 @@ if image_file is not None:
                 st.success("Pre-processing completed!")
 
                 # Display images.
-                # fields = ["Title", "ArtistName", "Country", "Century"]
-                # display_images(TEST_IMAGE, fields, similar_img_ids, data)
+                fields = ["Title", "ArtistName", "Country", "Century"]
+                display_images(TEST_IMAGE, fields, similar_img_ids, data)
 
                 load_choropleth = st.empty()
                 load_choropleth.markdown("Loading choropleth...")
@@ -309,8 +313,7 @@ if image_file is not None:
                 load_choropleth.empty()
                 st.caption("This map displays the country of origin for similar artworks. You may need to zoom out to see all the relevant countries.")
 
-        except:
-            st.write("Please enter an integer!")
+        
 #         new_art = get_image(TEST_IMAGE)
 #         similarity_vgg_euclidean = {"id":[],'mse': [], 'rmse': [],"scc":[],"uqi":[],"msssim":[],"vifp":[]}
 #         for i in range(5):
