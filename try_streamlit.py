@@ -62,19 +62,19 @@ def display_images(test_img, cap_fields, ids, df):
         cols = st.columns(4)
 
         if idx < num_imgs:
-            cols[0].image(download_image(ids[idx]), width=150, caption=captions[ids[idx]][fields])
+            cols[0].image(download_image(ids[idx]), width=150, caption=captions[ids[idx]][i for i in fields])
         idx += 1
 
         if idx < num_imgs:
-            cols[1].image(download_image(ids[idx]), width=150, caption=captions[ids[idx]][fields])
+            cols[1].image(download_image(ids[idx]), width=150, caption=captions[ids[idx]][i for i in fields])
         idx += 1
 
         if idx < num_imgs:
-            cols[2].image(download_image(ids[idx]), width=150, caption=captions[ids[idx]][fields])
+            cols[2].image(download_image(ids[idx]), width=150, caption=captions[ids[idx]][i for i in fields])
         idx += 1
         
         if idx < num_imgs:
-            cols[3].image(download_image(ids[idx]), width=150, caption=captions[ids[idx]][fields])
+            cols[3].image(download_image(ids[idx]), width=150, caption=captions[ids[idx]][i for i in fields])
             idx = idx + 1
         else:
             break
