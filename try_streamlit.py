@@ -38,7 +38,7 @@ Now, we invite you to delve into the world of art, find similar artworks, and fo
 st.sidebar.markdown("## Geographic Filter")
 st.sidebar.markdown("Use this panel to filter for your countries of interest.")
 
-@st.cache(persist=True, show_spinner=True, suppress_st_warning=True)   
+# @st.cache(persist=True, show_spinner=True, suppress_st_warning=True)   
 def display_images(test_img, cap_fields, ids, df):
 
     st.subheader("=" * 10 + "  User image  " + "=" * 10)
@@ -210,7 +210,7 @@ if image_file is not None:
         idx += list(data[~data['Century'].isin(selected_periods)].index)
     st.write(len(idx), "image ruled out!")
         
-    user_input = st.text_input("How many similar images would you like to find?",
+    user_input = st.text_input("How many similar images would you like to find? (Press enter to display results)",
                                help="Try entering a number larger than 5.")
     if len(user_input) != 0:
         try:
