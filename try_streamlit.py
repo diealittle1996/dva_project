@@ -12,6 +12,7 @@ from image_matching import get_similar_art, get_image, new_image_as_df, extract_
 from sewar.full_ref import mse, rmse, uqi, scc, msssim, vifp
 from streamlit_folium import folium_static
 import json
+import geojson
 from pathlib import Path
 import cv2 as cv
 import matplotlib.pyplot as plt
