@@ -75,7 +75,7 @@ def display_images(test_img, cap_fields, ids, df):
         
         if idx < num_imgs:
             cols[3].image(download_image(ids[idx]), width=150, caption=captions[ids[idx]][fields[0]] + " (" + ', '.join([captions[ids[idx]][i] for i in fields[1:]]) + ")")
-            idx = idx + 1
+            idx += 1
         else:
             break
 
@@ -87,37 +87,38 @@ def display_images(test_img, cap_fields, ids, df):
 #     return df, full_df
 
 data_load_state = st.text('Loading dataset...')
-data = pd.read_csv("cleaned_data_4.csv")
+data = pd.read_csv("cleaned_data.csv")
 # df, full_df = load_data(1000)
 data_load_state.text('Loading dataset...Completed!')
 if st.checkbox("Display Full Dataset"):
     st.write(data)
     
-st.sidebar.subheader("Filters")
+#################### Build the sidebar ####################
 filters = {}
 filters['Country'] = {}
 filters['Century'] = {}
+
+# Get the lists of countries (shown alphabetically)
+# This covers all high-level filters
 geo = {
-"Asian": ['China', 'India', 'Japan', 'Korea', 'Nepal', 'Sri Lanka','Thailand'],
-"European": ['Austria', 'Belgium', 'Britain', 'Denmark', 'France', 'Ireland',
-   'Germany', 'Greece', 'Hungary', 'Italy', 'Netherlands', 'Norway', 'Russia', 'Spain', 'Sweden', 'Switzerland'],
-"Unavailable": ["Unavailable"]
+    "All Art": ['Austria', 'Belgium', 'Britain', 'China', 'Denmark', 'France', 'Germany', 'Greece', 'Hungary', 'India',
+                'Ireland', 'Italy', 'Japan', 'Korea', 'Nepal', 'Netherlands', 'Norway', 'Russia', 'Spain', 'Sri Lanka',
+                'Sweden', 'Switzerland', 'Thailand', 'Unknown'],
+    "Asian Art": ['China', 'India', 'Japan', 'Korea', 'Nepal', 'Sri Lanka', 'Thailand'],
+    "European Art": ['Austria', 'Belgium', 'Britain', 'Denmark', 'France', 'Ireland', 'Germany', 'Greece',
+                     'Hungary', 'Italy', 'Netherlands', 'Norway', 'Russia', 'Spain', 'Sweden', 'Switzerland'
+                     ]
 }
 
-selected = st.sidebar.multiselect(
-    "Which culture are you interested in?",
-    ["Asian", "European", "Unavailable"],
-    default=["Asian", "European", "Unavailable"]
-)
+# Option for user to select their filter
+selected = st.sidebar.radio("Quick Filter", ['All Art', 'Asian Art Only', 'European Art Only'])
+# Apply the filter to a list to be used later on
+st.sidebar.write('Further Filter by individual countries')
+countries = geo[selected]
+for i in countries:
+    filters['Country'][i] = st.sidebar.checkbox(i, value=True, key=i)
+#################### End of sidebar ####################
 
-try:
-    countries = []
-    for i in selected:
-        countries += geo[i]
-    for i in countries:
-        filters['Country'][i] = st.sidebar.checkbox(i, value=True, key=i)
-except:
-    st.markdown("## Please select at least one culture!")
 
 st.subheader("Time Filter")
 periods = ['Before 1000', "1000's", "1100's", "1200's", "1300's", "1400's","1500's",
@@ -209,6 +210,7 @@ if image_file is not None:
             idx = list(data[~data['Country'].isin(selected_countries)].index)
     if len(selected_periods) > 0:
         idx += list(data[~data['Century'].isin(selected_periods)].index)
+    idx = np.unique(idx)
     st.write(len(idx), "image ruled out!")
         
     user_input = st.text_input("How many similar images would you like to find? (Press enter to display results)",
@@ -267,10 +269,10 @@ if image_file is not None:
                 max_count_country = map_info_df.loc[[map_info_df["Counts"].idxmax()]]["Region"].values[0]
                 loc = [48.019, 66.923]
 
-                if max_count_country in geo["Asian"]:
+                if max_count_country in geo["Asian Art"]:
                     loc = [39.916, 116.383]
 
-                if max_count_country in geo["European"]:
+                if max_count_country in geo["European Art"]:
                     loc = [50.378, 14.970]
 
                 map = folium.Map(location=loc, min_zoom=2, max_zoom=5, zoom_start=3)
@@ -279,23 +281,44 @@ if image_file is not None:
                 with open(geo_file, encoding="utf8") as f:
                     map_data = geojson.load(f)
 
-                # st.write(map_data)
+                # Trim down map_data to include only countries in database.
+                trimmed_map_data = {"type": "FeatureCollection",
+                                    "features": []
+                                    }
+
+                nl = " \n\n\n "
+                for country in map_data["features"]:
+                    if country["properties"]["ADMIN"] in geo["All Art"]:
+                        trimmed_map_data["features"].append(country)
+                        first_line = "Country name: {}".format(country['properties']['ADMIN'])
+                        second_line = ["Number of recommended paintings: 0"]
+                        trimmed_map_data["features"][-1]["properties"]['text'] = f"{first_line}{nl}{nl.join(second_line)}"
+
+                # st.text(trimmed_map_data["features"][0]["properties"])
 
                 # Build tooltip.
-                tooltip_text = []
-                for i in range(len(countries_unique)):
-                    tooltip_text.append(
-                        f"Country name: {countries_unique[i]}\nNumber of recommended paintings: {counts[i]}"
-                    )
+                tooltip_text = {}
+                for i, country in enumerate(countries_unique):
+                    first_line = "Country name: {}".format(countries_unique[i])
+                    second_line = ["Number of recommended paintings: {}".format(counts[i])]
+                    tooltip_text[country] = f"{first_line}{nl}{nl.join(second_line)}"
 
-                # st.text(tooltip_text)
+                # st.text(tooltip_text["China"])
 
-                for i, tip in enumerate(tooltip_text):
-                    map_data["features"][i]["properties"]['text'] = tip
+                # Find the index in the JSON file for each country.
+                index_in_json = {}
+                for idx, country in enumerate(trimmed_map_data["features"]):
+                    index_in_json[country['properties']['ADMIN']] = idx
 
-                st.text(map_data["features"][0]["properties"])
+                # st.write(index_in_json.keys())
+                # st.write(tooltip_text.keys())
 
-                choropleth = folium.Choropleth(geo_data=map_data,
+                for key in tooltip_text.keys():
+                    trimmed_map_data["features"][index_in_json[key]]["properties"]['text'] = tooltip_text[key]
+
+                # st.text(trimmed_map_data["features"][index_in_json["China"]]["properties"])
+
+                choropleth = folium.Choropleth(geo_data=trimmed_map_data,
                                                name="choropleth",
                                                data=map_info_df,
                                                columns=["Region", "Counts"],
@@ -308,13 +331,12 @@ if image_file is not None:
 
                 # Displays map.
                 choropleth.geojson.add_child(
-                    folium.features.GeoJsonTooltip(['ISO_A3'], labels=False)
+                    folium.features.GeoJsonTooltip(['text'], labels=False)
                 )
                 folium_static(map)
                 load_choropleth.empty()
-                st.caption("This map displays the country of origin for similar artworks. You may need to zoom out to see all the relevant countries.")
-
-        
+                st.caption("This map displays the country of origin for similar artworks. You may need to zoom out to see all of the relevant countries.\n Note that only countries in our database are colored (non-white).")
+     
 #         new_art = get_image(TEST_IMAGE)
 #         similarity_vgg_euclidean = {"id":[],'mse': [], 'rmse': [],"scc":[],"uqi":[],"msssim":[],"vifp":[]}
 #         for i in range(5):
