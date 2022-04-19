@@ -141,11 +141,11 @@ if choice == "Filter by time slider":
     idx2 = periods.index(end)
     for i in range(idx1, idx2+1):
         filters['Century'][periods[i]] = True
-    filters['Century']['Unavailable'] = True
+    filters['Century']['Unknown time period'] = True
 else:
     for i in periods:
         filters['Century'][i] = st.checkbox(i, value=True, key=i)
-    filters['Century']['Unavailable'] = st.checkbox('Unavailable', value=True, key="time unavailable")
+    filters['Century']['Unknown time period'] = st.checkbox('Unavailable', value=True, key="time unavailable")
 
 def update_filter(filter_dict, df):
     # Input is a dictionary of True/False labels
