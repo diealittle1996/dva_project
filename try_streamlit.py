@@ -104,8 +104,8 @@ geo = {
     "All Art": ['Austria', 'Belgium', 'Britain', 'China', 'Denmark', 'France', 'Germany', 'Greece', 'Hungary', 'India',
                 'Ireland', 'Italy', 'Japan', 'Korea', 'Nepal', 'Netherlands', 'Norway', 'Russia', 'Spain', 'Sri Lanka',
                 'Sweden', 'Switzerland', 'Thailand', 'Unknown'],
-    "Asian Art": ['China', 'India', 'Japan', 'Korea', 'Nepal', 'Sri Lanka', 'Thailand'],
-    "European Art": ['Austria', 'Belgium', 'Britain', 'Denmark', 'France', 'Ireland', 'Germany', 'Greece',
+    "Asian Art Only": ['China', 'India', 'Japan', 'Korea', 'Nepal', 'Sri Lanka', 'Thailand'],
+    "European Art Only": ['Austria', 'Belgium', 'Britain', 'Denmark', 'France', 'Ireland', 'Germany', 'Greece',
                      'Hungary', 'Italy', 'Netherlands', 'Norway', 'Russia', 'Spain', 'Sweden', 'Switzerland'
                      ]
 }
