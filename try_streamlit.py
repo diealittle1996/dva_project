@@ -63,22 +63,26 @@ def display_images(test_img, cap_fields, ids, df):
 
         if idx < num_imgs:
             cols[0].image(download_image(ids[idx]), width=150, caption=captions[ids[idx]][fields[0]] + " (" + ', '.join([captions[ids[idx]][i] for i in fields[1:4]]) + ")")
-            cols[0].write("Full image: "+ captions[ids[idx]][fields[4]])
+            link=f'[Full image]({captions[ids[idx]][fields[4]]})'
+            cols[0].markdown(link, unsafe_allow_html=True)
         idx += 1
 
         if idx < num_imgs:
             cols[1].image(download_image(ids[idx]), width=150, caption=captions[ids[idx]][fields[0]] + " (" + ', '.join([captions[ids[idx]][i] for i in fields[1:4]]) + ")")
-            cols[1].write("Full image: "+ captions[ids[idx]][fields[4]])
+            link=f'[Full image]({captions[ids[idx]][fields[4]]})'
+            cols[1].markdown(link, unsafe_allow_html=True)
         idx += 1
 
         if idx < num_imgs:
             cols[2].image(download_image(ids[idx]), width=150, caption=captions[ids[idx]][fields[0]] + " (" + ', '.join([captions[ids[idx]][i] for i in fields[1:4]]) + ")")
-            cols[2].write("Full image: "+ captions[ids[idx]][fields[4]])
+            link=f'[Full image]({captions[ids[idx]][fields[4]]})'
+            cols[2].markdown(link, unsafe_allow_html=True)
         idx += 1
         
         if idx < num_imgs:
             cols[3].image(download_image(ids[idx]), width=150, caption=captions[ids[idx]][fields[0]] + " (" + ', '.join([captions[ids[idx]][i] for i in fields[1:4]]) + ")")
-            cols[3].write("Full image: "+ captions[ids[idx]][fields[4]])
+            link=f'[Full image]({captions[ids[idx]][fields[4]]})'
+            cols[3].markdown(link, unsafe_allow_html=True)
             idx += 1
         else:
             break
