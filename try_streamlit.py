@@ -269,10 +269,10 @@ if image_file is not None:
                 max_count_country = map_info_df.loc[[map_info_df["Counts"].idxmax()]]["Region"].values[0]
                 loc = [48.019, 66.923]
 
-                if max_count_country in geo["Asian Art"]:
+                if max_count_country in geo["Asian Art Only"]:
                     loc = [39.916, 116.383]
 
-                if max_count_country in geo["European Art"]:
+                if max_count_country in geo["European Art Only"]:
                     loc = [50.378, 14.970]
 
                 map = folium.Map(location=loc, min_zoom=2, max_zoom=5, zoom_start=3)
