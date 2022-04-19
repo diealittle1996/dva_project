@@ -95,7 +95,7 @@ def display_images(test_img, cap_fields, ids, df):
 #     return df, full_df
 
 data_load_state = st.text('Loading dataset...')
-data = pd.read_csv("cleaned_data.csv")
+data = pd.read_csv("cleaned_data.csv", index_col=0)
 # df, full_df = load_data(1000)
 data_load_state.text('Loading dataset...Completed!')
 if st.checkbox("Display Full Dataset"):
@@ -111,7 +111,7 @@ filters['Century'] = {}
 geo = {
     "All Art": ['Austria', 'Belgium', 'Britain', 'China', 'Denmark', 'France', 'Germany', 'Greece', 'Hungary', 'India',
                 'Ireland', 'Italy', 'Japan', 'Korea', 'Nepal', 'Netherlands', 'Norway', 'Russia', 'Spain', 'Sri Lanka',
-                'Sweden', 'Switzerland', 'Thailand', 'Unknown'],
+                'Sweden', 'Switzerland', 'Thailand', 'Unknown country'],
     "Asian Art Only": ['China', 'India', 'Japan', 'Korea', 'Nepal', 'Sri Lanka', 'Thailand'],
     "European Art Only": ['Austria', 'Belgium', 'Britain', 'Denmark', 'France', 'Ireland', 'Germany', 'Greece',
                      'Hungary', 'Italy', 'Netherlands', 'Norway', 'Russia', 'Spain', 'Sweden', 'Switzerland'
