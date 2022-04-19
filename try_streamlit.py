@@ -62,19 +62,23 @@ def display_images(test_img, cap_fields, ids, df):
         cols = st.columns(4)
 
         if idx < num_imgs:
-            cols[0].image(download_image(ids[idx]), width=150, caption=captions[ids[idx]][fields[0]] + " (" + ', '.join([captions[ids[idx]][i] for i in fields[1:]]) + ")")
+            cols[0].image(download_image(ids[idx]), width=150, caption=captions[ids[idx]][fields[0]] + " (" + ', '.join([captions[ids[idx]][i] for i in fields[1:4]]) + ")")
+            cols[0].write("Full image: "+ captions[ids[idx]][fields[4]])
         idx += 1
 
         if idx < num_imgs:
-            cols[1].image(download_image(ids[idx]), width=150, caption=captions[ids[idx]][fields[0]] + " (" + ', '.join([captions[ids[idx]][i] for i in fields[1:]]) + ")")
+            cols[1].image(download_image(ids[idx]), width=150, caption=captions[ids[idx]][fields[0]] + " (" + ', '.join([captions[ids[idx]][i] for i in fields[1:4]]) + ")")
+            cols[1].write("Full image: "+ captions[ids[idx]][fields[4]])
         idx += 1
 
         if idx < num_imgs:
-            cols[2].image(download_image(ids[idx]), width=150, caption=captions[ids[idx]][fields[0]] + " (" + ', '.join([captions[ids[idx]][i] for i in fields[1:]]) + ")")
+            cols[2].image(download_image(ids[idx]), width=150, caption=captions[ids[idx]][fields[0]] + " (" + ', '.join([captions[ids[idx]][i] for i in fields[1:4]]) + ")")
+            cols[2].write("Full image: "+ captions[ids[idx]][fields[4]])
         idx += 1
         
         if idx < num_imgs:
-            cols[3].image(download_image(ids[idx]), width=150, caption=captions[ids[idx]][fields[0]] + " (" + ', '.join([captions[ids[idx]][i] for i in fields[1:]]) + ")")
+            cols[3].image(download_image(ids[idx]), width=150, caption=captions[ids[idx]][fields[0]] + " (" + ', '.join([captions[ids[idx]][i] for i in fields[1:4]]) + ")")
+            cols[3].write("Full image: "+ captions[ids[idx]][fields[4]])
             idx += 1
         else:
             break
@@ -256,7 +260,7 @@ if image_file is not None:
                 st.success("Pre-processing completed!")
 
                 # Display images.
-                fields = ["Title", "ArtistName", "Country", "Century"]
+                fields = ["Title", "ArtistName", "Country", "Century","primaryImage"]
                 display_images(TEST_IMAGE, fields, similar_img_ids, data)
 
                 load_choropleth = st.empty()
