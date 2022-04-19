@@ -286,7 +286,7 @@ if image_file is not None:
                                     "features": []
                                     }
 
-                nl = "&#013;"
+                nl = "&#013;&#010;"
                 for country in map_data["features"]:
                     if country["properties"]["ADMIN"] in geo["All Art"]:
                         trimmed_map_data["features"].append(country)
