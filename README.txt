@@ -9,6 +9,14 @@ recommendation system. It was developed in Python using Streamlit.
 INSTALLATION:
 *************************************************************************************************
 The required dependencies are contained in "requirements.txt".
+The required files in the local directory are:
+1) cleaned_data.csv
+2) countries.geojson
+3) image_matching.py
+4) README.txt
+5) requirements.txt
+6) try_streamlit.py
+7) VGG_features.npy
 
 EXECUTION:
 *************************************************************************************************
