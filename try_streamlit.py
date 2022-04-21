@@ -16,20 +16,16 @@ import matplotlib.pyplot as plt
 
 st.set_page_config(layout="wide")
 
-credentials = service_account.Credentials.from_service_account_info(
-   st.secrets["gcp_service_account"]
-)
-# client = bigquery.Client(credentials=credentials)
+st.session_state.update(st.session_state)
 
-st.markdown("# Self Exploratory Visualization on the World of Paintings")
+st.markdown("# Visualizing the World's Artistic Heritage")
 st.markdown('''
-Art is one of the world's great reservoirs of cultural heritage, and the rise of digitized art collections has made the sharing of this resource easier than ever before. The Metropolitan Museum, the Chicago Museum, and even Wikiart provide open source digitized versions of some of the world’s greatest artistic heritage.\n
-Digitized collections further allow cross-cultural interaction. Newly available datasets offer new resources and potential in art history, art appreciation, design, and more.\n
-Now, we invite you to delve into the world of art, find similar artworks, and form your own path of exploration and inspiration.
+Art is one of the world's great reservoirs of cultural heritage. Explore and interact with artistic works across culture and time to gain new and unexpected insights. \n
+Simply submit an image to find similar works, and form your own path of exploration and inspiration.
 ''')
 
 st.sidebar.markdown("## Geographic Filter")
-st.sidebar.markdown("Use this panel to filter for your countries of interest.")
+st.sidebar.markdown("Use this panel to filter for countries of interest.")
 
 
 def display_images(test_img, cap_fields, ids, df):
@@ -38,7 +34,6 @@ def display_images(test_img, cap_fields, ids, df):
     
     # A dictionary of caption fields pulled from df with image id as key value.
     captions = {id: {field: df.loc[df.objectID == str(id)][field].values[0] for field in cap_fields} for id in ids}
-    # st.write(captions)
 
     num_imgs = len(ids)
     st.subheader("\n", "=" * 10 + f"  Top {num_imgs} Similar Images  " + "=" * 10)
@@ -72,16 +67,8 @@ def display_images(test_img, cap_fields, ids, df):
         else:
             break
 
-# def load_data(nrows):
-#     query = f"SELECT * FROM `cse6242-343901.metobjects.table1` LIMIT {nrows}"
-#     query2 = "SELECT * FROM `cse6242-343901.metobjects.table1`"
-#     df = client.query(query).to_dataframe()
-#     full_df = client.query(query2).to_dataframe()
-#     return df, full_df
-
 data_load_state = st.text('Loading dataset...')
 data = pd.read_csv("cleaned_data.csv", index_col=0)
-# df, full_df = load_data(1000)
 data_load_state.text('Loading dataset...Completed!')
 if st.checkbox("Display Full Dataset"):
     st.write(data)
@@ -118,7 +105,7 @@ choices = ["Filter time period by slider", "Filter time period by checkbox"]
 choice = st.selectbox("Choose how you would like to filter by time period", choices)
 
 if choice == "Filter time period by slider":
-    century = st.select_slider("Choose a continuous time period of interest", options = periods, value=('Before 1000', "2000's"))
+    century = st.select_slider("Slide to Choose a continuous time period of interest", options = periods, value=('Before 1000', "2000's"))
     begin, end = century
     idx1 = periods.index(begin)
     idx2 = periods.index(end)
@@ -151,9 +138,7 @@ def update_filter(filter_dict, df):
 
 filtered_ids = update_filter(filters, data)
 df_filtered = data.loc[data['objectID'].isin(filtered_ids)]
-st.subheader('Dataset Quick Look:')
-st.write(df_filtered.head())
-st.write(len(df_filtered), "data points left")
+st.write("Works left after filtering",len(df_filtered))
 
 if len(df_filtered) < 10:
     st.markdown("#### Warning: too few data points!")
@@ -181,8 +166,8 @@ else:
     st.pyplot(fig)
  
 
-st.markdown("#### \**Please note that selected filters will be applied to the image recommendation algorithm. Results may be compromised if too many filters are applied. \**")
-st.subheader("Upload Your Image to Find Visually Similar Ones:")
+st.markdown("#### \**Applying too many filters may be compromise the algorithm results. \**")
+st.subheader("Submit Your Image to Find Visually Similar Artwork:")
 image_file = st.file_uploader("Upload Image", type=["png","jpg","jpeg"])
 selected_countries = [k for k,v in filters['Country'].items() if v==True]
 selected_periods = [k for k,v in filters['Century'].items() if v==True]
@@ -206,7 +191,7 @@ if image_file is not None:
     idx = np.unique(idx)
     st.write(len(idx), f"{'image' if len(idx)==1 else 'images'} ruled out!")
 
-    user_input = st.text_input("How many similar images would you like to find? (Press ENTER to display results)",
+    user_input = st.text_input("How many images would you like to show? (Press ENTER to display results)",
                                help="Try entering a number larger than 5.")
     if len(user_input) != 0:
         try:
@@ -288,7 +273,6 @@ if image_file is not None:
                         second_line = ["Number of recommended paintings: 0"]
                         trimmed_map_data["features"][-1]["properties"]['text'] = f"{first_line}{nl}{nl.join(second_line)}"
 
-                # st.text(trimmed_map_data["features"][0]["properties"])
 
                 # Build tooltip.
                 tooltip_text = {}
@@ -297,20 +281,14 @@ if image_file is not None:
                     second_line = ["Number of recommended paintings: {}".format(counts[i])]
                     tooltip_text[country] = f"{first_line}{nl}{nl.join(second_line)}"
 
-                # st.text(tooltip_text["China"])
 
                 # Find the index in the JSON file for each country.
                 index_in_json = {}
                 for idx, country in enumerate(trimmed_map_data["features"]):
                     index_in_json[country['properties']['ADMIN']] = idx
-
-                # st.write(index_in_json.keys())
-                # st.write(tooltip_text.keys())
-
+                  
                 for key in tooltip_text.keys():
                     trimmed_map_data["features"][index_in_json[key]]["properties"]['text'] = tooltip_text[key]
-
-                # st.text(trimmed_map_data["features"][index_in_json["China"]]["properties"])
 
                 choropleth = folium.Choropleth(geo_data=trimmed_map_data,
                                                name="choropleth",
@@ -330,18 +308,4 @@ if image_file is not None:
                 folium_static(map)
                 load_choropleth.empty()
                 st.caption("This map displays the country of origin for similar artworks. You may need to zoom out to see all of the relevant countries.\nNote that only countries in our database are colored (non-white).")
-     
-#         new_art = get_image(TEST_IMAGE)
-#         similarity_vgg_euclidean = {"id":[],'mse': [], 'rmse': [],"scc":[],"uqi":[],"msssim":[],"vifp":[]}
-#         for i in range(5):
-#             similar_art = get_image(mylist[i])
-#             similarity_vgg_euclidean["id"].append(mylist[i])
-#             similarity_vgg_euclidean["mse"].append(mse(new_art,similar_art))
-#             similarity_vgg_euclidean["rmse"].append(rmse(new_art,similar_art))
-#             similarity_vgg_euclidean["scc"].append(scc(new_art,similar_art))
-#             similarity_vgg_euclidean["uqi"].append(uqi(new_art,similar_art))
-#             similarity_vgg_euclidean["msssim"].append(msssim(new_art,similar_art).astype('float32'))
-#             similarity_vgg_euclidean["vifp"].append(vifp(new_art,similar_art))
-#         similarity_vgg_euclidean_df = pd.DataFrame(similarity_vgg_euclidean)
-#         st.write("avg mse: ", np.mean(similarity_vgg_euclidean_df["mse"]))
-#         st.write(similarity_vgg_euclidean_df)
+
