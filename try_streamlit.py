@@ -162,7 +162,6 @@ else:
 
     for i, v in enumerate(counts):
         plt.text(i-0.12, v+5, str(v))
-        st.write(i-0.12, v+5)
 
     st.pyplot(fig)
  
