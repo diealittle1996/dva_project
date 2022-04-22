@@ -36,7 +36,7 @@ def display_images(test_img, cap_fields, ids, df):
     captions = {id: {field: df.loc[df.objectID == str(id)][field].values[0] for field in cap_fields} for id in ids}
 
     num_imgs = len(ids)
-    st.subheader("\n", "=" * 10 + f"  Top {num_imgs} Similar Images  " + "=" * 10)
+    st.subheader("=" * 10 + f"  Top {num_imgs} Similar Images  " + "=" * 10)
     idx = 0
     for _ in range(num_imgs - 1):
         cols = st.columns(4)
