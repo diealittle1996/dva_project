@@ -159,9 +159,14 @@ else:
     ax.set_ylabel("Frequency")
     ax.legend(bbox_to_anchor= (1.02, 1))
     ax.set_xticklabels(periods+["Unavailable"])
+    _, ymax = ax.get_ylim()
 
     for i, v in enumerate(counts):
-        plt.text(i-0.12, v+5, str(v))
+        if ymax > 100:
+            padding = 5
+        else:
+            padding = ymax/20
+        plt.text(i-0.12, v+padding, str(v))
 
     st.pyplot(fig)
  
