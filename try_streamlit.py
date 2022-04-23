@@ -154,7 +154,7 @@ else:
     fig, ax = plt.subplots()
     fig.set_size_inches(15, 6)
     freq_df.plot(kind="bar", stacked=True, ax=ax, legend=False)
-    ax.set_title("Period Distribution in the Selected Countries (Interactive)")
+    ax.set_title("Period Distribution in the Selected Countries (Interactive to Filters)")
     ax.set_xlabel("Century")
     ax.set_ylabel("Frequency")
     ax.legend(bbox_to_anchor= (1.02, 1))
@@ -171,7 +171,7 @@ else:
     st.pyplot(fig)
  
 
-st.markdown("#### \**Applying too many filters may be compromise the algorithm results. \**")
+st.markdown("#### \**Applying too many filters may compromise the algorithm results. \**")
 st.subheader("Submit Your Image to Find Visually Similar Artwork:")
 image_file = st.file_uploader("Upload Image", type=["png","jpg","jpeg"])
 selected_countries = [k for k,v in filters['Country'].items() if v==True]
